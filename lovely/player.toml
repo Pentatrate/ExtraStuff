@@ -1,0 +1,116 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+function Player:getDistance()
+'''
+position = "before"
+payload = '''
+function Player:arrowKey()
+    local x, y = 0, 0
+
+    if maininput:down("kp8") or maininput:down("up") then    -- up
+        y = y - 1
+    end
+    if maininput:down("kp2") or maininput:down("down") then    -- down
+        y = y + 1
+    end
+    if maininput:down("kp6") or maininput:down("right") then    -- right
+        x = x + 1
+    end
+    if maininput:down("kp4") or maininput:down("left") then    -- left
+        x = x - 1
+    end
+
+    if maininput:down("kp7") then    -- up-left
+        x = x - 1
+        y = y - 1
+    end
+    if maininput:down("kp9") then    -- up-right
+        x = x + 1
+        y = y - 1
+    end
+    if maininput:down("kp1") then    -- down-left
+        x = x - 1
+        y = y + 1
+    end
+    if maininput:down("kp3") then    -- down-right
+        x = x + 1
+        y = y + 1
+    end
+
+    if x ~= 0 or y ~= 0 then
+        local angle = math.deg(math.atan2(x, -y))
+        if angle < 0 then
+            angle = angle + 360
+        end
+
+        self.angle = angle
+    end
+end
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+local angleDifference = self.angle - self.anglePrevFrame
+'''
+position = "before"
+payload = '''
+end
+if extrasavedata.arrowKeyControls then
+	self:arrowKey()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+for k, v in ipairs(self.angleHistory) do
+					if v[1] < cs.cBeat - 5 then
+						table.remove(self.angleHistory, k)
+					end
+				end
+			end
+		end
+'''
+position = "after"
+payload = '''
+if not (extrasavedata.onlyArrowKeys and extrasavedata.arrowKeyControls) then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+function Player:update(dt)
+  prof.push("player update")
+'''
+position = "after"
+payload = '''
+if extrasavedata.movesTowardsMouse then
+    local dx = self.x - mouse.rx
+    local dy = self.y - mouse.ry
+    local distance = math.sqrt(dx*dx + dy*dy)
+    
+    if distance > extrasavedata.moveToRadiusCranky then
+        local angle = math.atan2(dy, dx)
+        local targetX = mouse.rx + math.cos(angle) * extrasavedata.moveToRadiusCranky
+        local targetY = mouse.ry + math.sin(angle) * extrasavedata.moveToRadiusCranky
+        flux.to(self, 5, {x = targetX, y = targetY}):ease("inOutQuad")
+    end
+end
+'''
+match_indent = true
+#extrasavedata.moveToRadiusCranky

@@ -1,0 +1,44 @@
+{
+	"extraConfigOtherMods": false,
+	"mainMenuList": [
+		"playGame",
+		"playSelect",
+		"customs",
+		"customsWorkshop",
+		"marathon",
+		"achievements",
+		"costumes",
+		"settings",
+		"Mods",
+		"credits",
+		"exitgame",
+		"devLevelSelect",
+		"discordLink"
+	],
+	"disabledMainOptions": [
+	],
+	"randomizeMenuOnStart": false,
+	
+	"showAccessibility": true,
+	"accessibilityPos": "bottomLeft",
+	
+	"randomLevelButton": true,
+	"allowRandomLevelFolder": false,
+	
+	"arrowKeyControls": false,
+	"onlyArrowKeys": false,
+	
+	"movesTowardsMouse": false,
+	"moveToRadiusCranky": 25,
+	
+	"foxyJumpscare": false,
+	"coydressReplaceFoxy": false,
+	"foxyJumpscareChance": 0.1,
+	
+	"robloxAds": false,
+	
+	"openDemoLevelWarning": true,
+	
+	"alwaysLoadWorkshop": true,
+	"doneChimaeraFight": false
+}

@@ -1,0 +1,66 @@
+{
+  "roomInfo": {
+    "filename": "EraChimaeraRoom.json",
+    "width": 15,
+    "height": 15,
+	"spawn": [5, 4],
+	"floor": {
+		"xOffset": 0,
+		"yOffset": 0
+	}
+  },
+  "layers": [
+    {
+		"name": "floor",
+      "data": [
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,8,8,8,0,0,0,0,0,0],
+		[0,0,0,8,8,8,8,8,8,8,8,8,0,0,0],
+		[0,0,0,8,8,8,8,8,8,8,8,8,0,0,0],
+		[0,0,0,8,8,8,8,8,8,8,8,8,0,0,0],
+		[0,0,8,8,8,8,8,8,8,8,8,8,8,0,0],
+		[0,0,8,8,8,8,8,8,8,8,8,8,8,0,0],
+		[0,0,8,8,8,8,8,8,8,8,8,8,8,0,0],
+		[0,0,0,8,8,8,8,8,8,8,8,8,0,0,0],
+		[0,0,0,8,8,8,8,8,8,8,8,8,0,0,0],
+		[0,0,0,8,8,8,8,8,8,8,8,8,0,0,0],
+		[0,0,0,0,0,0,8,8,8,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      ]
+    }
+  ],
+  "objects": [
+	{
+		"sprite": "chimaera0",
+		"drawOffset": [-2, -4],
+		"position": [8, 8],
+		"size": [4, 1],
+		"sizeOffset": [-1, -1],
+		"type": "transition",
+		"visible": true,
+		"collision": true,
+		"to": "BattleState",
+		"toParams": [
+		  [
+			["chimaeraBoss", { "ogx": 467, "ogy": 153 }]
+		  ],
+		  [
+			"The walls shift...",
+			"A gust of wind rattles the room.",
+			"Distant echoes.",
+			"The ground trembles slightly.",
+			"Shadows dance across the walls.",
+			"Time seems to slow down.",
+			"A faint rumble echoes around.",
+			"The air feels heavy.",
+			"Silence fills the space.",
+			"A eerie calm settles.",
+			"Cranky wants cornbread",
+			"..."
+		  ]
+		]
+	}
+  ]
+}

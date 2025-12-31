@@ -1,0 +1,223 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+ffi = require "ffi"
+'''
+position = "after"
+payload = '''
+imguiextra = require("Mods.ExtraStuff.lib.imguiextra")
+
+testtext = ""
+backspace = false
+backspacetimer = 0
+adTimer = 0
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+sprites = require('preload.sprites')
+'''
+position = "after"
+payload = '''
+currentLandscapeAd = math.random(1, 4)
+currentPortraitAd = math.random(1, 4)
+currentSquareAd = math.random(1, 4)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+ez = require "lib.ezanim_rewrite"
+'''
+position = "after"
+payload = '''
+jumpscareAnim = ez.newjson(
+	"Mods/ExtraStuff/assets/jumpscare.png",
+	"Mods/ExtraStuff/assets/jumpscare.json"
+)
+
+jumpscareInst = nil
+jumpscareActive = false
+tryjumpscaretimer = 0
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+savedata = dpf.loadJson(project.saveLoc, defaultSave)
+'''
+position = "after"
+payload = '''
+extraDefaultSave = dpf.loadJson("Mods/ExtraStuff/defaultSav.json")
+extrasavedata = dpf.loadJson("savedata/extraMod.sav", extraDefaultSave)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+toggle_fullscreen = { "key:f11" },
+'''
+position = "after"
+payload = '''
+up = { "key:up" },
+down = { "key:down" },
+right = { "key:right" },
+left = { "key:left" },
+kp1 = { "key:kp1" },
+kp2 = { "key:kp2" },
+kp3 = { "key:kp3" },
+kp4 = { "key:kp4" },
+kp9 = { "key:kp9" },
+kp6 = { "key:kp6" },
+kp7 = { "key:kp7" },
+kp8 = { "key:kp8" },
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+function love.update(d)
+'''
+position = "before"
+payload = '''
+function tryTriggerJumpscare()
+	if jumpscareActive then return end
+
+	if math.random() <= ((extrasavedata.foxyJumpscareChance or 0.1) / 100) then
+		jumpscareInst = jumpscareAnim:instance("all")
+		jumpscareInst:play("all", 0, function()
+			jumpscareActive = false
+		end)
+		te.playOne(sounds.foxyjumpscare,"static",'sfx',1)
+		jumpscareActive = true
+	end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+	prof.push('frame')
+'''
+position = "after"
+payload = '''
+
+if adTimer < 0 and extrasavedata.robloxAds then
+	currentLandscapeAd = math.random(1, 4)
+	currentPortraitAd = math.random(1, 4)
+	currentSquareAd = math.random(1, 4)
+	adTimer = 10
+elseif extrasavedata.robloxAds then
+	adTimer = adTimer - d
+end
+
+tryjumpscaretimer = tryjumpscaretimer + d
+if tryjumpscaretimer > 1 and extrasavedata.foxyJumpscare then
+	tryTriggerJumpscare()
+	tryjumpscaretimer = 0
+end
+if jumpscareActive and jumpscareInst then
+	jumpscareInst:update(d, 1200)
+end
+--[[
+if backspace then
+	backspacetimer = backspacetimer + d
+	if backspacetimer > 0.1 then
+		backspacetimer = 0
+		-- get the byte offset to the last UTF-8 character in the string.
+		local byteoffset = utf8.offset(testtext, -1)
+
+		if byteoffset then
+			-- remove the last UTF-8 character.
+			-- string.sub operates on bytes rather than UTF-8 characters, so we couldn't do string.sub(text, 1, -2).
+			testtext = string.sub(testtext, 1, byteoffset - 1)
+		end
+	end
+else
+	backspacetimer = 0
+end
+]]
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+function love.keypressed(key)
+'''
+position = "after"
+payload = '''
+backspace = key == "backspace"
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+function love.keyreleased(key)
+'''
+position = "after"
+payload = '''
+if key == "backspace" and backspace then
+	backspace = false
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+if project.showFPS then
+'''
+position = "before"
+payload = '''
+if jumpscareActive and jumpscareInst then
+	jumpscareInst:draw(0, 0, 0, 0.95 * shuv.scale, 0.95 * shuv.scale)
+-- inst:draw(x,y,r,sx,sy,ox,oy,kx,ky)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+mouse:draw()
+'''
+position = "before"
+payload = '''
+if extrasavedata.robloxAds then
+	local w, h, _ = love.window.getMode()
+	local s = 1
+	if shuv.scale == 1 then
+		s = 0.5
+	end
+	love.graphics.draw(sprites.ads.landscape["c" .. currentLandscapeAd], w/2, 0, 0, s, s, 364)
+	love.graphics.draw(sprites.ads.portrait["c" .. currentPortraitAd], 0, h/2, 0, s, s, 0, 300)
+	love.graphics.draw(sprites.ads.square["c" .. currentSquareAd], w, h, 0, s, s, 300, 250)
+end
+'''
+match_indent = true

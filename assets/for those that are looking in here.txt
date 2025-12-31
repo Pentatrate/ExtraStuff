@@ -1,0 +1,10 @@
+why are you looking in here?
+
+anyways
+actions.ttf is pretty much all custom the only glyphs that aren't are A, C, D, E, F, I, K, S, and T
+smallnum.ttf is also pretty much all custom the only glyphs that aren't are 0, 1, 2, 3, 4, 5, 7, and 8. 6 is in the UI in rhythmic shields as Beck has 68/100 S and Hildo has 68/150 health
+rpgtitle is also pretty much all custom. i am not listing more glyphs...
+
+This is somewhat near done.
+
+ads are by noob_y

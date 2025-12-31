@@ -1,0 +1,53 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''
+	outline(function()
+		color(cs.vfx.uiColor)
+'''
+position = "after"
+payload = '''
+local function drawAccessibility()
+
+	love.graphics.setFont(fonts.digitalDisco)
+	
+	local text = "RateMod: " .. cs.rateMod
+		.. "\nVFX: " .. savedata.options.accessibility.vfx
+		.. "\nTaps: " .. savedata.options.accessibility.taps
+		.. "\nSides: " .. savedata.options.accessibility.sides
+		.. "\nBarelies: " .. savedata.options.accessibility.barelies
+	local padding = 24 -- distance from edges
+	local screenW, screenH = 300, 360
+
+	local _, wrappedTextLines = fonts.digitalDisco:getWrap(text, 300)
+	local textHeight = #wrappedTextLines * fonts.digitalDisco:getHeight()
+
+	local x, y = padding/2, padding
+	local align = "left"
+
+	if extrasavedata.accessibilityPos then
+		local pos = extrasavedata.accessibilityPos:lower()
+
+		if string.find(pos, "right") then
+			align = "right"
+			x = screenW - padding/2
+		end
+
+		if string.find(pos, "bottom") then
+			y = screenH - padding - textHeight
+		end
+	end
+
+	love.graphics.printf(text, x, y, 300, align)
+end
+
+if extrasavedata.showAccessibility and (not extrasavedata.showAccessibilityOnPause or cs.paused) then
+    drawAccessibility()
+end
+'''
+match_indent = true

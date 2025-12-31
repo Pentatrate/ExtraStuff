@@ -1,0 +1,92 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+st:setFgDraw(function(self)
+'''
+position = "after"
+payload = '''
+if maininput:down("f9") then
+	self.reorderMenu = true
+end
+
+if self.chimaera then
+	self.menuMusicManager:stop()
+	
+	--[[cs = bs.load('BattleState')
+	cs.bg = self.bg
+	cs:init({{'chimaeraBoss', { ogx = 467, ogy = 153 }}}, {"The walls shift...",
+		"A gust of wind rattles the room.",
+		"Distant echoes.",
+		"The ground trembles slightly.",
+		"Shadows dance across the walls.",
+		"Time seems to slow down.",
+		"A faint rumble echoes around.",
+		"The air feels heavy.",
+		"Silence fills the space.",
+		"A eerie calm settles.",
+		"Cranky wants cornbread",
+		"..."})]]
+		
+	cs = bs.load('WorldState')
+	self.bg.delete = true
+	cs:init()
+end
+
+local function shuffle(t)
+	for i = #t, 2, -1 do
+		local j = love.math.random(i)
+		t[i], t[j] = t[j], t[i]
+	end
+end
+
+if self.reorderMenu then
+	self.reorderMenu = imgui.Begin("Reorder Menu", true)
+
+	imguiextra.DrawReorderableRadialList(imgui, self.mainMenu, "mainMenu", {imgui.GetContentRegionAvail().x, 24})
+
+	if imgui.Button("Reset") then
+		self.mainMenu:restoreHidden(extraDefaultSave.disabledMainOptions)
+		extrasavedata.disabledMainOptions = extraDefaultSave.disabledMainOptions
+		self.mainMenu:reorderToIds(extraDefaultSave.mainMenuList)
+	end
+
+	imgui.SameLine()
+
+	if imgui.Button("Randomize") then
+		shuffle(extrasavedata.mainMenuList)
+		self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
+	end
+
+	self.mainMenu:saveList(self.mainMenu, "mainMenuList", "disabledMainOptions")
+	imgui.End()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+		savedata.seenIntroPopups = true
+		sdfunc.save()
+	end'''
+position = "after"
+payload = '''
+self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
+self.mainMenu:addHidden(extrasavedata.disabledMainOptions)
+
+if extrasavedata.randomizeMenuOnStart then
+	for i = #extrasavedata.mainMenuList, 2, -1 do
+		local j = love.math.random(i)
+		extrasavedata.mainMenuList[i], extrasavedata.mainMenuList[j] = extrasavedata.mainMenuList[j], extrasavedata.mainMenuList[i]
+	end
+	self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
+end
+'''
+match_indent = true

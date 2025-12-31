@@ -1,0 +1,38 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''
+dpf.saveJson("savedata/playedlevels.json", self.playedLevelsJson)
+'''
+position = "after"
+payload = '''
+--self:goToHiddenLevel('levels/Finished levels/blowafuse/', 'BlowAFuseIntro')
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''
+function st:changeToHidden()
+'''
+position = "before"
+payload = '''
+function st:goToHiddenLevel(levelPath, transitionState, variant)
+    self.goToHidden = true
+	self.transition = transitionState or 'NisenenIntro'
+	self.filename = levelPath or 'levels/Finished levels/nisenen/'
+	self.newVariant = variant or 'hard'
+	
+	-- Ratemod, restart on and no barely judgements should reset on hidden song entry
+	self.rateMod = 1
+	self.restartOn = 'none'
+	--self.noBarelyJudgements = false
+end
+'''
+match_indent = true

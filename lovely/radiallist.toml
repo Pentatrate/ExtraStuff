@@ -1,0 +1,249 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+self.tapRotate = 0
+'''
+position = "after"
+payload = '''
+self.hiddenOptions = {}
+self.hiddenIcons = {}
+self.hiddenIndices = {}
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+function RadialList:update(dt)
+'''
+position = "before"
+payload = '''
+
+function RadialList:clampSelect()
+	local count = #self.options[self.submenu]
+	if count > 0 then
+		self.selection = ((self.selection - 1) % count) + 1
+		self.visualSelection = self.selection
+	else
+		self.selection = 1
+		self.visualSelection = 1
+	end
+end
+
+local function swap(t, a, b)
+    t[a], t[b] = t[b], t[a]
+end
+
+function RadialList:swapRadialOption(list, a, b)
+    swap(list.options[list.submenu], a, b)
+    swap(list.icons[list.submenu], a, b)
+	self:clampSelect()
+end
+
+function RadialList:reorderToIds(idList)
+    -- Move items in order of idList
+    for targetIndex, id in ipairs(idList) do
+        for i = targetIndex, #self.options[self.submenu] do
+            if self.options[self.submenu][i]._id == id then
+                self:swapRadialOption(self, i, targetIndex)
+                break
+            end
+        end
+    end
+	self:clampSelect()
+end
+
+function RadialList:saveList(list, name, disabledname) 
+    local saveData = {}
+    local disabledData = {}
+    local existingData = extrasavedata[name] or extraDefaultSave[name]
+    local existingDisabled = extrasavedata[disabledname] or extraDefaultSave[disabledname]
+
+    local savedIds = {}
+    local savedDisabledIds = {}
+
+    -- Save enabled options
+    for i, icon in ipairs(list.options[list.submenu]) do
+        local id = icon._id or "unknown_icon"
+        table.insert(saveData, id)
+        savedIds[id] = true
+    end
+
+    -- Include any missing old enabled IDs
+    for _, oldId in ipairs(existingData) do
+        if not savedIds[oldId] then
+            table.insert(saveData, oldId)
+        end
+    end
+
+    -- Save hidden/disabled options
+    for i, icon in ipairs(list.hiddenOptions or {}) do
+        local id = icon._id or "unknown_icon"
+        table.insert(disabledData, id)
+        savedDisabledIds[id] = true
+    end
+
+    -- Include any missing old hidden IDs
+    for _, oldId in ipairs(existingDisabled) do
+        if not savedDisabledIds[oldId] then
+            table.insert(disabledData, oldId)
+        end
+    end
+
+    -- save to extrasavedata
+    extrasavedata[name] = saveData
+    if disabledname then
+        extrasavedata[disabledname] = disabledData
+    end
+
+    dpf.saveJson("savedata/extraMod.sav", extrasavedata)
+end
+
+local function find(tbl, value)
+    for _, v in ipairs(tbl) do
+        if v == value then return true end
+    end
+    return false
+end
+
+function RadialList:addHidden(idList)
+    self.hiddenOptions = self.hiddenOptions or {}
+    self.hiddenIcons = self.hiddenIcons or {}
+    self.hiddenIndices = self.hiddenIndices or {}
+
+    local function isAlreadyHidden(option)
+        for _, hiddenOption in ipairs(self.hiddenOptions) do
+            if hiddenOption == option then return true end
+        end
+        return false
+    end
+
+    for i = #self.options[self.submenu], 1, -1 do
+        local option = self.options[self.submenu][i]
+        if option._id and find(idList, option._id) and not isAlreadyHidden(option) then
+            table.insert(self.hiddenOptions, option)
+            table.insert(self.hiddenIcons, self.icons[self.submenu][i])
+            table.insert(self.hiddenIndices, i)
+
+            table.remove(self.options[self.submenu], i)
+            table.remove(self.icons[self.submenu], i)
+        end
+    end
+	self:clampSelect()
+end
+
+function RadialList:restoreHidden(idList)
+    self.hiddenOptions = self.hiddenOptions or {}
+    self.hiddenIcons = self.hiddenIcons or {}
+    self.hiddenIndices = self.hiddenIndices or {}
+
+    if not idList or #idList == 0 then
+        local sortedIndices = {}
+        for i = 1, #self.hiddenIndices do
+            table.insert(sortedIndices, i)
+        end
+        table.sort(sortedIndices, function(a,b) return self.hiddenIndices[a] < self.hiddenIndices[b] end)
+
+        for _, idx in ipairs(sortedIndices) do
+			local insertPos = math.min(
+				self.hiddenIndices[idx],
+				#self.options[self.submenu] + 1
+			)
+            table.insert(self.options[self.submenu], insertPos, self.hiddenOptions[idx])
+            table.insert(self.icons[self.submenu], insertPos, self.hiddenIcons[idx])
+        end
+
+        self.hiddenOptions = {}
+        self.hiddenIcons = {}
+        self.hiddenIndices = {}
+        return
+    end
+
+    for i = #self.hiddenOptions, 1, -1 do
+        local option = self.hiddenOptions[i]
+        if option._id and find(idList, option._id) then
+            local insertPos = math.min(
+				self.hiddenIndices[i],
+				#self.options[self.submenu] + 1
+			)
+            table.insert(self.options[self.submenu], insertPos, option)
+            table.insert(self.icons[self.submenu], insertPos, self.hiddenIcons[i])
+
+            table.remove(self.hiddenOptions, i)
+            table.remove(self.hiddenIcons, i)
+            table.remove(self.hiddenIndices, i)
+        end
+    end
+	self:clampSelect()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+function RadialList:addOption(text,func,y,locvars,icon)
+    table.insert(self.icons[self.submenu],icon or sprites.menu.fallback)
+	OptionsList.addOption(self,text,func,y,locvars)
+end
+'''
+position = "at"
+payload = '''
+function RadialList:addOption(text, func, y, locvars, icon, id)
+    table.insert(self.icons[self.submenu], icon or sprites.menu.fallback)
+    OptionsList.addOption(self, text, func, y, locvars)
+    
+    -- set the _id on the last inserted option
+    local index = #self.options[self.submenu]
+    self.options[self.submenu][index]._id = id or text
+end
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+prof.push("RadialList draw")
+'''
+position = "after"
+payload = '''
+if not self.options[self.submenu] or #self.options[self.submenu] == 0 then
+    prof.pop("RadialList draw")
+    return
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+local selectIcon = self.icons[self.submenu][self.selection]
+'''
+position = "at"
+payload = '''
+local selectIcon = self.icons[self.submenu][self.selection] or sprites.menu.fallback
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+local icon = self.icons[self.submenu][i]
+'''
+position = "at"
+payload = '''
+local icon = self.icons[self.submenu][i] or sprites.menu.fallback
+'''
+match_indent = true

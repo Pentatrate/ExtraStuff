@@ -1,0 +1,137 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+st:setUpdate(function(self,dt)
+'''
+position = "after"
+payload = '''
+local function chooseItem()
+	local choise
+	for i = 1, #self.menuItems do
+        local idx = math.random(1, #self.menuItems)
+        local item = self.menuItems[idx]
+
+        if item.isLevel or extrasavedata.allowRandomLevelFolder then
+            choice = idx
+            break
+        end
+    end
+	return choice
+end
+
+--print(helpers.dumpTable(self.menuItems[self.selection]), "wow")
+if extrasavedata.randomLevelButton and maininput:released("r") then
+    local choice = chooseItem()
+
+    if choice then
+        self.selection = choice
+        te.play(sounds.click, "static", "sfx", 0.5)
+
+        self.listEase = flux.to(self,30,{easedSelection=self.selection}):ease("outExpo")
+        self:updateSelection()
+        self:resetLevelPreload()
+        self.rateMod = 1.0
+        if cs.source then cs.source:setPitch(1.0) end
+		
+		local accept = not self.menuItems[self.selection].isLevel and 
+			not self.menuItems[self.selection].isMarathon and 
+			not self.menuItems[self.selection].openCustomsFolder and 
+			not self.menuItems[self.selection].editor and 
+			not self.menuItems[self.selection].quitToMenu
+        if accept then
+            maininput:forceInput('accept', 1)
+			chooseItem()
+        end
+    end
+end
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+if cs.source then
+		cs.source:stop()
+	end
+
+	self.subfolderSelections[self.currentDirectory] = self.selection
+'''
+position = "before"
+payload = '''
+
+if self.menuItems[self.selection].isLevel and self.menuItems[self.selection].rawMetadata.formatversion > 14 and extrasavedata.openDemoLevelWarning then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+returnData = {state = 'SongSelect', vars = {topDirectory = self.topDirectory, currentDirectory = self.currentDirectory,
+		selection = self.selection, subfolderSelections = self.subfolderSelections, allowEditor = self.allowEditor}}
+	
+
+	cs:init()
+'''
+position = "after"
+payload = '''
+elseif self.menuItems[self.selection].isLevel and extrasavedata.openDemoLevelWarning then
+PopupManager.queuePopup('This is a\nDemo level', '\n\nWould you still like \nto open it?', 60, {
+		{label='popupYes',func = function()
+			if cs.source then
+				cs.source:stop()
+			end
+
+			self.subfolderSelections[self.currentDirectory] = self.selection
+			self.menuMusicManager:stop()
+			cLevel = filename
+			self:deletePlayer()
+
+			if savedata.seenEditorWarning then
+				cs = bs.load('Editor')
+			else
+				cs = bs.load('EditorWarning')
+			end
+			cs.newLevel = newLevel
+			returnData = {state = 'SongSelect', vars = {topDirectory = self.topDirectory, currentDirectory = self.currentDirectory,
+				selection = self.selection, subfolderSelections = self.subfolderSelections, allowEditor = self.allowEditor}}
+
+
+			cs:init()
+		end},
+		{label='popupNo',func = function() 
+			
+		end}
+	})
+else
+	if cs.source then
+		cs.source:stop()
+	end
+
+	self.subfolderSelections[self.currentDirectory] = self.selection
+	self.menuMusicManager:stop()
+	cLevel = filename
+	self:deletePlayer()
+
+	if savedata.seenEditorWarning then
+		cs = bs.load('Editor')
+	else
+		cs = bs.load('EditorWarning')
+	end
+	cs.newLevel = newLevel
+	returnData = {state = 'SongSelect', vars = {topDirectory = self.topDirectory, currentDirectory = self.currentDirectory,
+		selection = self.selection, subfolderSelections = self.subfolderSelections, allowEditor = self.allowEditor}}
+
+
+	cs:init()
+end
+'''
+match_indent = true

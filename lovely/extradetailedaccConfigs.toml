@@ -1,0 +1,86 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = -1
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''
+love.graphics.rectangle("line", 572, 180-16, 25,25)
+if DAkeys[1][2] then love.graphics.rectangle("fill", 572, 180-16, 25,25) end
+love.graphics.printf(tostring(DAkeys[1][1]),572, 180-10, 100, "center")
+love.graphics.rectangle("line", 572, 180+16, 25,25)
+if DAkeys[2][2] then love.graphics.rectangle("fill", 572, 180+16, 25,25) end
+love.graphics.printf(tostring(DAkeys[2][1]),572, 180+22, 100, "center")
+'''
+position = "at"
+payload = '''
+local function drawMoveTapDisplay(x)
+    love.graphics.rectangle("line", x, 180 - 16, 25, 25)
+    if DAkeys[1][2] then love.graphics.rectangle("fill", x, 180 - 16, 25, 25) end
+    love.graphics.printf( tostring(DAkeys[1][1]), x - 37.5, 180 - 10, 100, "center" )
+
+    love.graphics.rectangle("line", x, 180 + 16, 25, 25)
+    if DAkeys[2][2] then love.graphics.rectangle("fill", x, 180 + 16, 25, 25) end
+    love.graphics.printf( tostring(DAkeys[2][1]), x - 37.5, 180 + 22, 100, "center" )
+end
+
+if extrasavedata.extraConfigOtherMods
+and extrasavedata.detailedacc
+and extrasavedata.detailedacc.moveTapDisplayLeft then
+    drawMoveTapDisplay(28)
+else
+    drawMoveTapDisplay(572)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''
+local MeterY = 330
+'''
+position = "at"
+payload = '''
+local MeterY = 330
+if extrasavedata.extraConfigOtherMods
+and extrasavedata.detailedacc
+and extrasavedata.detailedacc.moveTapErrorMeterTop then
+    MeterY = 50
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''
+local Theight = 5
+'''
+position = "after"
+payload = '''
+if extrasavedata.extraConfigOtherMods and extrasavedata.detailedacc then
+	local pos = extrasavedata.detailedacc.sectionTimerPos or "topLeft"
+
+	local screenW, screenH = 600, 360
+
+	local marginX = 6
+	local marginY = 20
+
+	if pos == "topRight" then
+		Tx = screenW - Twidth - marginX
+		Ty = marginY
+
+	elseif pos == "bottomLeft" then
+		Tx = marginX
+		Ty = screenH - Theight - marginY - 12 -- extra room for text
+		
+	elseif pos == "bottomRight" then
+		Tx = screenW - Twidth - marginX
+		Ty = screenH - Theight - marginY - 12
+	end
+end
+'''
+match_indent = true
