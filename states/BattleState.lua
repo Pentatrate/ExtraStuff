@@ -222,6 +222,9 @@ st:setUpdate(function(self, dt)
 
 		-- nested windows
 		self.parry.blockStart = love.math.random() * (1 - self.parry.blockSize)
+		if self.currentAttack.ptime then
+			self.parry.blockStart = self.currentAttack.ptime/self.currentAttack.duration
+		end
 		self.parry.parryStart =
 			self.parry.blockStart +
 			love.math.random() * (self.parry.blockSize - self.parry.parrySize)
@@ -266,7 +269,7 @@ st:setUpdate(function(self, dt)
 				self:playEnemyAnim(self.activeEnemy, "hurt")
 
 			elseif c >= parryStart and c <= parryEnd then
-				self.text = "CRANKY PARRIED!\nDamage negated."
+				self.text = self.currentAttack.parryText or "CRANKY PARRIED!\nDamage negated."
 				te.playOne(sounds.hold, "static", "sfx", 1)
 				self.cranky.sp = helpers.clamp(self.cranky.sp + 15, 0, self.cranky.maxsp)
 				self.cranky.sp = helpers.clamp(self.cranky.sp + 15, 0, self.cranky.maxsp)

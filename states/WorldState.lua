@@ -180,67 +180,86 @@ st:setBgDraw(function(self)
 	end
 end)
 
-function st:getObjectDrawY(obj)
-    local oy = obj.position[2]
+function st:getObjectsDrawY()
+    local allObjects = helpers.copytable(self.objects)
 
-    if obj.drawOffset then
-        oy = oy + obj.drawOffset[2]
+    local playerSpr = sprites.crankyup
+    if self.direction == "down" then
+        playerSpr = sprites.crankydown
+    elseif self.direction == "right" then
+        playerSpr = sprites.crankyside
+    elseif self.direction == "left" then
+        playerSpr = sprites.crankyside
     end
 
-    local h = obj.size and obj.size[2] or 1
+    table.insert(allObjects, {
+        sprite = playerSpr,
+        position = {
+            self.position.x / 32 + 1,
+            self.position.y / 32 + 1
+        },
+        drawOffset = {0, 0},
+        isPlayer = true,
+        flipX = (self.direction == "left")
+    })
 
-    return (oy + h) * 32
-end
+    table.sort(allObjects, function(a, b)
+        return a.position[2] < b.position[2]
+    end)
 
-function st:getPlayerDrawY()
-    return self.position.y + 16
+    return allObjects
 end
 
 st:setFgDraw(function(self)
-	for i = 1, #self.objects do
-		if self.objects[i].visible then
-			local obj = self.objects[i]
-			local dx = (obj.drawOffset and obj.drawOffset[1] or 0)
-			local dy = (obj.drawOffset and obj.drawOffset[2] or 0)
+    local drawList = self:getObjectsDrawY()
 
-			love.graphics.draw(
-				sprites[obj.sprite],
-				(obj.position[1] + dx) * 32 - 32,
-				(obj.position[2] + dy) * 32 - 32
-			)
-		end
-	end
-	
-	if self.direction == "up" then
-		love.graphics.draw(sprites.crankyup, self.position.x, self.position.y, 0, 1, 1, 16, 16)
-	elseif self.direction == "down" then
-		love.graphics.draw(sprites.crankydown, self.position.x, self.position.y, 0, 1, 1, 16, 16)
-	elseif self.direction == "right" then
-		love.graphics.draw(sprites.crankyside, self.position.x, self.position.y, 0, 1, 1, 16, 16)
-	elseif self.direction == "left" then
-		love.graphics.draw(sprites.crankyside, self.position.x, self.position.y, 0, -1, 1, 16, 16)
-	end
-	
-	if showCollision then
-		for _, obj in ipairs(self.objects) do
-			if obj.collision then
-				local ox = obj.position[1] + (obj.sizeOffset and obj.sizeOffset[1] or 0)
-				local oy = obj.position[2] + (obj.sizeOffset and obj.sizeOffset[2] or 0)
-				local w = (obj.size and obj.size[1] or 1)
-				local h = (obj.size and obj.size[2] or 1)
+    for _, obj in ipairs(drawList) do
+        local dx = (obj.drawOffset and obj.drawOffset[1] or 0)
+        local dy = (obj.drawOffset and obj.drawOffset[2] or 0)
 
-				love.graphics.setColor(1, 0, 0, 0.4)
-				love.graphics.rectangle(
-					"fill",
-					ox * 32 - 32,
-					oy * 32 - 32,
-					w * 32,
-					h * 32
-				)
-				love.graphics.setColor(1, 1, 1, 1)
-			end
-		end
-	end
+        if obj.isPlayer then
+            love.graphics.draw(
+                obj.sprite,
+                self.position.x,
+                self.position.y,
+                0,
+                obj.flipX and -1 or 1,
+                1,
+                16,
+                16
+            )
+        else
+            if obj.visible ~= false then
+                love.graphics.draw(
+                    sprites[obj.sprite],
+                    (obj.position[1] + dx) * 32 - 32,
+                    (obj.position[2] + dy) * 32 - 32
+                )
+            end
+        end
+    end
+
+    if showCollision then
+        for _, obj in ipairs(self.objects) do
+            if obj.collision then
+                local ox = obj.position[1] + (obj.sizeOffset and obj.sizeOffset[1] or 0)
+                local oy = obj.position[2] + (obj.sizeOffset and obj.sizeOffset[2] or 0)
+                local w = (obj.size and obj.size[1] or 1)
+                local h = (obj.size and obj.size[2] or 1)
+
+                love.graphics.setColor(1, 0, 0, 0.4)
+                love.graphics.rectangle(
+                    "fill",
+                    ox * 32 - 32,
+                    oy * 32 - 32,
+                    w * 32,
+                    h * 32
+                )
+                love.graphics.setColor(1, 1, 1, 1)
+            end
+        end
+    end
 end)
+
 
 return st

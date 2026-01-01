@@ -54,6 +54,17 @@ function chimaeraBoss:initialize(params)
 			block = 0.25,
 			parry = 0.1,
 			counter = 0.03
+		},
+		fire = {
+			name = "Breath Fire",
+			damage = 40,
+			stunChance = 0,
+			ptime = 15,
+			duration = 22,
+			block = 0,
+			parry = 0.075,
+			parryText = "CRANKY DODGED.",
+			counter = 0
 		}
 	}
 	
