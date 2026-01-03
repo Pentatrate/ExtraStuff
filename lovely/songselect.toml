@@ -58,16 +58,11 @@ match_indent = true
 [patches.pattern]
 target = "states/SongSelect.lua"
 pattern = '''
-if cs.source then
-		cs.source:stop()
-	end
-
-	self.subfolderSelections[self.currentDirectory] = self.selection
+function st:editLevel(filename,newLevel)
 '''
-position = "before"
+position = "after"
 payload = '''
-
-if self.menuItems[self.selection].isLevel and self.menuItems[self.selection].rawMetadata.formatversion > 14 and extrasavedata.openDemoLevelWarning then
+local function loadEditor()
 '''
 match_indent = true
 
@@ -83,55 +78,33 @@ returnData = {state = 'SongSelect', vars = {topDirectory = self.topDirectory, cu
 '''
 position = "after"
 payload = '''
+end
+
+if self.menuItems[self.selection].isLevel and self.menuItems[self.selection].rawMetadata.formatversion > 14 and extrasavedata.openDemoLevelWarning then
+	loadEditor()
 elseif self.menuItems[self.selection].isLevel and extrasavedata.openDemoLevelWarning then
-PopupManager.queuePopup('This is a\nDemo level', '\n\nWould you still like \nto open it?', 60, {
+	PopupManager.queuePopup('This is a\nDemo level', '\n\nWould you still like \nto open it?', 60, {
 		{label='popupYes',func = function()
-			if cs.source then
-				cs.source:stop()
-			end
-
-			self.subfolderSelections[self.currentDirectory] = self.selection
-			self.menuMusicManager:stop()
-			cLevel = filename
-			self:deletePlayer()
-
-			if savedata.seenEditorWarning then
-				cs = bs.load('Editor')
-			else
-				cs = bs.load('EditorWarning')
-			end
-			cs.newLevel = newLevel
-			returnData = {state = 'SongSelect', vars = {topDirectory = self.topDirectory, currentDirectory = self.currentDirectory,
-				selection = self.selection, subfolderSelections = self.subfolderSelections, allowEditor = self.allowEditor}}
-
-
-			cs:init()
+			loadEditor()
 		end},
 		{label='popupNo',func = function() 
 			
 		end}
 	})
 else
-	if cs.source then
-		cs.source:stop()
-	end
-
-	self.subfolderSelections[self.currentDirectory] = self.selection
-	self.menuMusicManager:stop()
-	cLevel = filename
-	self:deletePlayer()
-
-	if savedata.seenEditorWarning then
-		cs = bs.load('Editor')
-	else
-		cs = bs.load('EditorWarning')
-	end
-	cs.newLevel = newLevel
-	returnData = {state = 'SongSelect', vars = {topDirectory = self.topDirectory, currentDirectory = self.currentDirectory,
-		selection = self.selection, subfolderSelections = self.subfolderSelections, allowEditor = self.allowEditor}}
-
-
-	cs:init()
+	loadEditor()
 end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+function st:playLevel(filename, variant)
+'''
+position = "after"
+payload = '''
+PopupManager:close()
 '''
 match_indent = true

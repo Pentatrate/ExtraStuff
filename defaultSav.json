@@ -40,5 +40,9 @@
 	"openDemoLevelWarning": true,
 	
 	"alwaysLoadWorkshop": true,
-	"doneChimaeraFight": false
+	"doneChimaeraFight": false,
+	
+	"allInverse": false,
+	"allMine": false,
+	"allTap": false
 }

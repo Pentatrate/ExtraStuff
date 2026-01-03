@@ -1,15 +1,17 @@
 local st = Gamestate:new('WorldState')
-local showCollision = true
+local showCollision = false
 
-st:setInit(function(self)
-    self.roomData = dpf.loadJson('Mods/ExtraStuff/rooms/TestRoom.json')
+st:setInit(function(self, roomPath, location)
+    self.roomData = dpf.loadJson(roomPath)
     
     self.tileset = cs.tileset or ez.new(sprites.tilesheet, { width = 32, height = 32 })
     self.moveTimer = 0
 	
 	self.objects = self.roomData.objects or {}
 	
-	if self.roomData.roomInfo.spawn then
+	if location then
+		self.tilePos = { location[1], location[2] }
+	elseif self.roomData.roomInfo.spawn then
 		local spawnpos = self.roomData.roomInfo.spawn
 		self.tilePos = { spawnpos[1], spawnpos[2] }
 	else
@@ -21,6 +23,10 @@ st:setInit(function(self)
 		y = self.tilePos[2] * 32 - 16
 	}
 	self.direction = "down"
+	
+	self.cameraPos = {
+		x = math.ceil(self.position.x - 300), y = math.ceil(self.position.y - 180)
+	}
 end)
 
 function st:getLayer(name)
@@ -65,6 +71,38 @@ function st:getObjectAt(tx, ty)
     end
 end
 
+function st:getObjectById(id)
+    for _, obj in ipairs(self.objects) do
+        if obj.id == id then
+            return obj
+        end
+    end
+end
+
+function st:setObjectVariable(path, value)
+    local objectId, field = path:match("([^%.]+)%.(.+)")
+    if not objectId or not field then return end
+
+    local target = self:getObjectById(objectId)
+    if not target then return end
+
+    target[field] = value
+end
+
+function st:collectRoomState()
+    local state = {}
+    for _, obj in ipairs(self.objects) do
+        if obj.id then
+            state[obj.id] = {
+                collision = obj.collision,
+                visible = obj.visible,
+                sprite = obj.sprite
+            }
+        end
+    end
+    return state
+end
+
 function st:activateObject(obj)
     if obj.type == "transition" then
 		cs = bs.load(obj.to)
@@ -77,17 +115,54 @@ function st:activateObject(obj)
     end
 
     if obj.type == "door" then
-        cs = bs.load(obj.to)
+		if love.filesystem.getInfo(obj.toParams[1]) then
+			cs = bs.load(obj.to)
 
-        if obj.toParams then
-            cs:init(obj.toParams)
-        else
-            cs:init()
+			if obj.toParams then
+				cs:init(unpack(obj.toParams))
+			else
+				cs:init()
+			end
+		else
+			print("room doesn't exist oopsies")
+		end
+    end
+	
+	if obj.type == "button" then
+        if obj.variable then
+            local objectId, field = obj.variable:match("([^%.]+)%.(.+)")
+            local target = self:getObjectById(objectId)
+
+            if target then
+                if obj.setsTo ~= nil then
+                    target[field] = obj.setsTo
+                else
+                    target[field] = not target[field]
+                end
+
+                if target.type == "door" then
+					if target.collision == false and target.opensprite then
+						target.sprite = target.opensprite
+					elseif target.collision == true and target.closesprite then
+						target.sprite = target.closesprite
+					end
+				end
+            end
         end
+
+        if obj.oneShot then
+            obj.collision = false
+            obj.visible = false
+            obj.used = true
+        end
+
+        return
     end
 end
 
 st:setUpdate(function(self, dt)
+	flux.to(self.cameraPos, 20, {x = math.ceil(self.position.x - 300), y =math.ceil(self.position.y - 180)})
+
     if self.moveTimer > 0 then
         self.moveTimer = self.moveTimer - dt
         return
@@ -117,12 +192,12 @@ st:setUpdate(function(self, dt)
 			local obj = self:getObjectAt(nx, ny)
 
 			if obj then
-				if obj.type == "door" then
-					self:activateObject(obj)
+				if obj.collision then
 					return
 				end
-
-				if obj.collision then
+				
+				if obj.type == "door" then
+					self:activateObject(obj)
 					return
 				end
 			end
@@ -160,24 +235,29 @@ st:setUpdate(function(self, dt)
 end)
 
 st:setBgDraw(function(self)
-	love.graphics.setColor(0,0,0,1)
-	love.graphics.rectangle("fill", 0,0,600,360)
-	love.graphics.setColor(1,1,1,1)
-    --[[for i = 0, self.tileset.frames -1 do
-		self.tileset:draw(i, 0, i * 32 - 32)
-	end]]
-	for y = 1, self.roomData.roomInfo.height do
-		for x = 1, self.roomData.roomInfo.width do
-			local layer = self:getLayer("floor")
-			local layerInfo = self.roomData.roomInfo[layer.name]
+    prof.push("worldbgdraw")
 
-			self.tileset:draw(
-				layer.data[y][x],
-				x * 32 - 32 + (layerInfo.xOffset or 0),
-				y * 32 - 32 + (layerInfo.yOffset or 0)
-			)
-		end
-	end
+    love.graphics.push()
+    love.graphics.translate(-self.cameraPos.x, -self.cameraPos.y)
+
+    love.graphics.clear(0,0,0,1)
+    love.graphics.setColor(1,1,1,1)
+
+    for y = 1, self.roomData.roomInfo.height do
+        for x = 1, self.roomData.roomInfo.width do
+            local layer = self:getLayer("floor")
+            local layerInfo = self.roomData.roomInfo[layer.name]
+
+            self.tileset:draw(
+                layer.data[y][x],
+                x * 32 - 32 + (layerInfo.xOffset or 0),
+                y * 32 - 32 + (layerInfo.yOffset or 0)
+            )
+        end
+    end
+
+    love.graphics.pop()
+    prof.pop("worldbgdraw")
 end)
 
 function st:getObjectsDrawY()
@@ -211,6 +291,11 @@ function st:getObjectsDrawY()
 end
 
 st:setFgDraw(function(self)
+    prof.push("worldfgdraw")
+
+    love.graphics.push()
+    love.graphics.translate(-self.cameraPos.x, -self.cameraPos.y)
+
     local drawList = self:getObjectsDrawY()
 
     for _, obj in ipairs(drawList) do
@@ -259,6 +344,9 @@ st:setFgDraw(function(self)
             end
         end
     end
+
+    love.graphics.pop()
+    prof.pop("worldfgdraw")
 end)
 
 

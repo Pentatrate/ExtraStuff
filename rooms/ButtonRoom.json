@@ -1,6 +1,6 @@
 {
   "roomInfo": {
-    "filename": "EraChimaeraRoom.json",
+    "filename": "ButtonRoom.json",
     "width": 15,
     "height": 15,
 	"spawn": [5, 4],
@@ -33,33 +33,31 @@
   ],
   "objects": [
 	{
-		"sprite": "chimaera0",
-		"drawOffset": [-2, -4],
-		"position": [8, 8],
-		"size": [4, 1],
-		"sizeOffset": [-1, -1],
-		"type": "transition",
+		"sprite": "button",
+		"drawOffset": [0, 0],
+		"position": [7, 8],
+		"size": [1, 1],
+		"sizeOffset": [0, 0],
+		"type": "button",
+		"variable": "mainDoor.collision",
 		"visible": true,
 		"collision": true,
-		"to": "BattleState",
+	},
+	{
+		"id": "mainDoor",
+		"sprite": "door",
+		"opensprite": "dooropen",
+		"closesprite": "door",
+		"drawOffset": [0, 0],
+		"position": [8, 8],
+		"size": [1, 1],
+		"sizeOffset": [0, 0],
+		"type": "door",
+		"visible": true,
+		"collision": true,
+		"to": "WorldState",
 		"toParams": [
-		  [
-			["chimaeraBoss", { "ogx": 467, "ogy": 153 }]
-		  ],
-		  [
-			"The walls shift...",
-			"A gust of wind rattles the room.",
-			"Distant echoes.",
-			"The ground trembles slightly.",
-			"Shadows dance across the walls.",
-			"Time seems to slow down.",
-			"A faint rumble echoes around.",
-			"The air feels heavy.",
-			"Silence fills the space.",
-			"A eerie calm settles.",
-			"Cranky wants cornbread",
-			"..."
-		  ]
+		  "Mods/ExtraStuff/rooms/EraChimaeraRoom.json"
 		]
 	}
   ]

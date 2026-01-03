@@ -35,7 +35,7 @@ if self.chimaera then
 		
 	cs = bs.load('WorldState')
 	self.bg.delete = true
-	cs:init()
+	cs:init('Mods/ExtraStuff/rooms/EraChimaeraRoom.json')
 end
 
 local function shuffle(t)

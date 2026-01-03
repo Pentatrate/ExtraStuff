@@ -86,6 +86,13 @@ if config then
 	config.robloxAds = helpers.InputBool("Ads on the sides", (config.robloxAds or false))
 		imgui.Text("ads are made by noob_y")
 	
+	
+	imgui.Separator()
+	
+	config.allInverse = helpers.InputBool("All Inverses", (config.allInverse or false))
+	--config.allMine = helpers.InputBool("All Mines", (config.allMine or false))
+	config.allTap = helpers.InputBool("All Taps", (config.allTap or false))
+	
 	imgui.Separator()
 
 	config.extraConfigOtherMods = helpers.InputBool("Extra Config for Other Mods?", (config.extraConfigOtherMods or false))
