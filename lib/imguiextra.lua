@@ -168,4 +168,58 @@ function imguiHelp.Dropdown(label, positions, currentValue)
     return positions[selectedIndex]
 end
 
+local function drawValue(label, value, setter, parentTable)
+    local t = type(value)
+
+    if t == "number" then
+        local v = ffi.new("float[1]", value)
+        if imgui.DragFloat(label, v, 0.1, -1e9, 1e9, "%.3f", 0) then
+            setter(v[0])
+        end
+
+    elseif t == "string" then
+        local buf = ffi.new("char[256]", value)
+        if imgui.InputText(label, buf, 256, 0, nil, nil) then
+            setter(ffi.string(buf))
+        end
+
+    elseif t == "boolean" then
+        local b = ffi.new("bool[1]", value)
+        if imgui.Checkbox(label, b) then
+            setter(b[0])
+        end
+
+--[[    elseif t == "function" then
+        if imgui.Button(label, {0, 0}) then
+            local ok, err = pcall(value, parentTable)
+            if not ok then
+                print("Function '" .. label .. "' error:", err)
+            end
+        end
+]]
+    elseif t == "table" then
+        if imgui.TreeNode_Str(label) then
+            imguiHelp.drawTable(value)
+            imgui.TreePop()
+        end
+
+    else
+        imgui.Text("%s (%s)", label, t)
+    end
+end
+
+function imguiHelp.drawTable(tbl)
+    for k, v in pairs(tbl) do
+        imgui.PushID_Str(tostring(k))
+        drawValue(
+            tostring(k),
+            v,
+            function(newVal)
+                tbl[k] = newVal
+            end
+        )
+        imgui.PopID()
+    end
+end
+
 return imguiHelp

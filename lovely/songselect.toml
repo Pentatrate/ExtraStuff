@@ -12,12 +12,16 @@ st:setUpdate(function(self,dt)
 position = "after"
 payload = '''
 local function chooseItem()
-	local choise
+	local choice
 	for i = 1, #self.menuItems do
         local idx = math.random(1, #self.menuItems)
         local item = self.menuItems[idx]
 
-        if item.isLevel or extrasavedata.allowRandomLevelFolder then
+        if item.isLevel or (extrasavedata.allowRandomLevelFolder and not item.isLevel and 
+			not item.isMarathon and 
+			not item.openCustomsFolder and 
+			not item.editor and 
+			not item.quitToMenu) then
             choice = idx
             break
         end
@@ -80,9 +84,10 @@ position = "after"
 payload = '''
 end
 
-if self.menuItems[self.selection].isLevel and self.menuItems[self.selection].rawMetadata.formatversion > 14 and extrasavedata.openDemoLevelWarning then
+if self.menuItems[self.selection].isLevel and self.menuItems[self.selection].rawMetadata.formatversion and self.menuItems[self.selection].rawMetadata.formatversion > 14 and extrasavedata.openDemoLevelWarning then
 	loadEditor()
 elseif self.menuItems[self.selection].isLevel and extrasavedata.openDemoLevelWarning then
+	
 	PopupManager.queuePopup('This is a\nDemo level', '\n\nWould you still like \nto open it?', 60, {
 		{label='popupYes',func = function()
 			loadEditor()
@@ -105,6 +110,24 @@ function st:playLevel(filename, variant)
 '''
 position = "after"
 payload = '''
-PopupManager:close()
+if PopupManager.queue[1] then
+	PopupManager:close()
+end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+st:setFgDraw(function(self)
+'''
+position = "after"
+payload = '''
+--[[
+	self.wow = imgui.Begin("CS Editor", nil, true)
+		imguiextra.drawTable(cs)
+	imgui.End()]]
+'''
+match_indent = true
+
