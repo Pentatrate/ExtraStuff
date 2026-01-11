@@ -19,6 +19,8 @@
 	],
 	"randomizeMenuOnStart": false,
 	
+	"allowedEases": [
+	],
 	"showAccessibility": true,
 	"accessibilityPos": "bottomLeft",
 	

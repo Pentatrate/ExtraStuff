@@ -51,3 +51,15 @@ if extrasavedata.showAccessibility and (not extrasavedata.showAccessibilityOnPau
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''
+cs.level.properties.forceVFX or 				-- VFX is forced, or
+'''
+position = "after"
+payload = '''
+(v.event.type == "ease" and (extrasavedata.allowedEases and extrasavedata.allowedEases[v.event.var])) or
+'''
+match_indent = true

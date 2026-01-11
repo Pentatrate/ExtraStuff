@@ -222,4 +222,50 @@ function imguiHelp.drawTable(tbl)
     end
 end
 
+function imguiHelp.drawStringList(label, tbl, options)
+    options = options or {}
+    local allowEmpty = options.allowEmpty or false
+    local inputWidth = options.inputWidth or 150
+    local removeText = options.removeText or "-"
+    local addText = options.addText or "+"
+
+    imgui.Text(label)
+
+    for key, _ in pairs(tbl) do
+        imgui.PushID_Str(tostring(key))
+
+        imgui.TextUnformatted(tostring(key))
+        imgui.SameLine()
+
+        if imgui.SmallButton(tostring(removeText)) then
+            tbl[key] = nil
+        end
+
+        imgui.PopID()
+    end
+
+    imguiHelp._stringListBuffers = imguiHelp._stringListBuffers or {}
+    local buf = imguiHelp._stringListBuffers[label]
+    if not buf then
+        buf = ffi.new("char[256]")
+        buf[0] = 0
+        imguiHelp._stringListBuffers[label] = buf
+    end
+
+    imgui.PushItemWidth(inputWidth)
+    imgui.InputText("##add_" .. label, buf, 256)
+    imgui.PopItemWidth()
+
+    imgui.SameLine()
+
+    if imgui.Button(tostring(addText) .. "##" .. label) then
+        local str = ffi.string(buf)
+
+        if (allowEmpty or str ~= "") and tbl[str] == nil then
+            tbl[str] = true
+            buf[0] = 0
+        end
+    end
+end
+
 return imguiHelp

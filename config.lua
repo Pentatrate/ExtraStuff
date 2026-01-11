@@ -58,7 +58,21 @@ if config then
 		)
 
 	imgui.Separator()
-
+	
+	if not config.allowedEases then
+		config.allowedEases = {}
+	end
+	
+	imguiextra.drawStringList(
+		"Eases That are Allowed in No VFX:",
+		config.allowedEases,
+		{
+			inputWidth = 200
+		}
+	)
+	
+	imgui.Separator()
+	
 	config.openDemoLevelWarning = helpers.InputBool("Editing Demo Warning", (config.openDemoLevelWarning or false))
 
 	imgui.Separator()

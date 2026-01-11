@@ -125,7 +125,7 @@ st:setFgDraw(function(self)
 position = "after"
 payload = '''
 --[[
-	self.wow = imgui.Begin("CS Editor", nil, true)
+	self.wow = imgui.Begin("CS Editor", nil, 0)
 		imguiextra.drawTable(cs)
 	imgui.End()]]
 '''
