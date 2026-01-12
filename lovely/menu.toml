@@ -48,7 +48,7 @@ end
 if self.reorderMenu then
 	self.reorderMenu = imgui.Begin("Reorder Menu", true)
 
-	imguiextra.DrawReorderableRadialList(imgui, self.mainMenu, "mainMenu", {imgui.GetContentRegionAvail().x, 24})
+	imguiextra.DrawReorderableRadialList(self.mainMenu, "mainMenu", {imgui.GetContentRegionAvail().x, 24})
 
 	if imgui.Button("Reset") then
 		self.mainMenu:restoreHidden(extraDefaultSave.disabledMainOptions)
@@ -65,6 +65,12 @@ if self.reorderMenu then
 
 	self.mainMenu:saveList(self.mainMenu, "mainMenuList", "disabledMainOptions")
 	imgui.End()
+	
+	if imgui.love.GetWantCaptureMouse() then
+		love.mouse.setVisible(true)
+	else
+		love.mouse.setVisible(false)
+	end
 end
 '''
 match_indent = true

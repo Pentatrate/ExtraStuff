@@ -42,7 +42,7 @@ local function swapRadialOption(list, a, b)
     swap(list.icons[list.submenu], a, b)
 end
 
-function imguiHelp.DrawReorderableRadialList(imgui, radialList, list_id, buttonSize)
+function imguiHelp.DrawReorderableRadialList(radialList, list_id, buttonSize)
     list_id = list_id or "radialList"
     buttonSize = buttonSize or {120, 24}
 

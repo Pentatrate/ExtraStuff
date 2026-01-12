@@ -64,7 +64,7 @@ if config then
 	end
 	
 	imguiextra.drawStringList(
-		"Eases That are Allowed in No VFX:",
+		"Allowed Eases in No VFX:",
 		config.allowedEases,
 		{
 			inputWidth = 200

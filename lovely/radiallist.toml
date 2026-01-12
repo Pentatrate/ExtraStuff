@@ -90,13 +90,6 @@ function RadialList:saveList(list, name, disabledname)
         savedDisabledIds[id] = true
     end
 
-    -- Include any missing old hidden IDs
-    for _, oldId in ipairs(existingDisabled) do
-        if not savedDisabledIds[oldId] then
-            table.insert(disabledData, oldId)
-        end
-    end
-
     -- save to extrasavedata
     extrasavedata[name] = saveData
     if disabledname then
