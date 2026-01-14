@@ -50,12 +50,15 @@ if config then
 
 	local positions = {"topLeft", "topRight", "bottomLeft", "bottomRight"}
 
-	config.accessibilityPos =
-		imguiextra.Dropdown(
-			"Accessibility Position:",
-			positions,
-			config.accessibilityPos or "bottomLeft"
-		)
+	if imgui.BeginCombo("Accessibility Position", config.accessibilityPos) then
+        for i, v in ipairs(positions) do
+            local isSelected = (v == config.accessibilityPos)
+            if imgui.Selectable_Bool(v, isSelected) then
+                config.accessibilityPos = v
+            end
+        end
+        imgui.EndCombo()
+    end 
 
 	imgui.Separator()
 	
@@ -119,12 +122,16 @@ if config then
 				config.detailedacc.moveTapErrorMeterTop = helpers.InputBool("Move the Tap Error Meter to the Top", (config.detailedacc.moveTapErrorMeterTop or false))
 				
 				local positions = {"topLeft", "topRight", "bottomLeft", "bottomRight"}
-				config.detailedacc.sectionTimerPos =
-					imguiextra.Dropdown(
-						"Section Timer Position:",
-						positions,
-						config.detailedacc.sectionTimerPos or "topLeft"
-					)
+				
+				if imgui.BeginCombo("Section Timer Position", config.detailedacc.sectionTimerPos) then
+					for i, v in ipairs(positions) do
+						local isSelected = (v == config.detailedacc.sectionTimerPos)
+						if imgui.Selectable_Bool(v, isSelected) then
+							config.detailedacc.sectionTimerPos = v
+						end
+					end
+					imgui.EndCombo()
+				end 
 			end
 		end
 		
