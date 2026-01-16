@@ -58,7 +58,7 @@ function tags.addTag(out, mod, name)
 	end
 end
 
-function tags.generateTags(leveldata)
+function tags.generateTags(leveldata, testSave)
     local returnedTags = {}
     
     local maxTime = 0
@@ -268,7 +268,7 @@ function tags.generateTags(leveldata)
         tags.addTag(returnedTags, tags.modifierFromRatio(count.inverses/gpNotes, true), "Inverses")
         tags.addTag(returnedTags, tags.modifierFromRatio(count.taps/gpNotes, true), "Taps")
 		if avgNoteDist then
-			tags.addTag(returnedTags, tags.modifierFromRatio(1/avgNoteDist, false), "Note Density")
+			tags.addTag(returnedTags, tags.modifierFromRatio(1/(4*avgNoteDist), false), "Note Density")
 		else
 			tags.addTag(returnedTags, "Literaly", "One Note")
 		end
@@ -276,7 +276,9 @@ function tags.generateTags(leveldata)
     else
         tags.addTag(returnedTags, "No", "Gameplay")
     end
-	tags.addTag(returnedTags, tags.modifierFromRatio(count.traces/ttlNotes, true), "Traces")
+	if ttlNotes > 0 then
+		tags.addTag(returnedTags, tags.modifierFromRatio(count.traces/ttlNotes, true), "Traces")
+	end
     
     local vfxRatio = vfxnum / (endBeat * 2)
     tags.addTag(returnedTags, tags.modifierFromRatio(vfxRatio, false), "VFX")
@@ -323,6 +325,17 @@ function tags.generateTags(leveldata)
 	
 	if damoclismGimmick then tags.addTag(returnedTags, "", "Damoclism Gimmick") end
 	if editsPaddle then tags.addTag(returnedTags, "", "Changes Paddle") end
+	
+	
+	if testSave then
+		--[[local saveName = LevelManager:getMenuItemSaveName(cs.menuItems[cs.selection], cs:getVariantInfo(cs.menuItems[cs.selection],cs.menuItems[cs.selection].currVariant))
+		if cs.playedLevelsJson[saveName] then
+			cs.playedLevelsJson[saveName].tags = {}
+			cs.playedLevelsJson[saveName].tags.generated = helpers.copytable(returnedTags)
+			dpf.saveJson("savedata/playedlevels.json", cs.playedLevelsJson)
+			print("tried saving tags")
+		end]]
+	end
     
     return returnedTags
 end

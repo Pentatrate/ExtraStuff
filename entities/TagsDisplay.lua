@@ -25,6 +25,9 @@ function TagsDisplay:update(dt)
     if self:isMouseOver() then
         self.hovered = true
     end
+	if not cs.menuItems then
+		self.delete = true
+	end
 end
 
 function TagsDisplay:isMouseOver()
@@ -55,7 +58,7 @@ function TagsDisplay:getHeight()
 end
 
 function TagsDisplay:draw()
-    if not cs.menuItems[cs.selection].isLevel or #self.tags == 0 then return end
+    if (cs.menuItems and cs.selection and not cs.menuItems[cs.selection].isLevel) or #self.tags == 0 then return end
     
     local width = self:getWidth()
     local height = self:getHeight()

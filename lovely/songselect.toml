@@ -154,7 +154,7 @@ self.levelData = levelData -- Loads the level data in memory so it can be fed to
 position = "after"
 payload = '''
 if extrasavedata.showTags then
-local tagList = tags.generateTags(self.levelData)
+local tagList = tags.generateTags(self.levelData, true)
 self.tagsDisplay:setTags(tagList)
 end
 '''
@@ -184,20 +184,6 @@ position = "after"
 payload = '''
 if extrasavedata.showTags then
 self.tagsDisplay:draw()
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "states/SongSelect.lua"
-pattern = '''
-function st:updateSelection()
-'''
-position = "after"
-payload = '''
-if extrasavedata.showTags then
-self.tagsDisplay.tags = {}
 end
 '''
 match_indent = true
