@@ -29,9 +29,13 @@ sprites = require('preload.sprites')
 '''
 position = "after"
 payload = '''
-currentLandscapeAd = math.random(1, 4)
-currentPortraitAd = math.random(1, 4)
-currentSquareAd = math.random(1, 4)
+getNewAdKeys = false
+landscapeAdKeys = {"c1", "c2", "c3", "c4"}
+portraitAdKeys = {"c1", "c2", "c3", "c4"}
+squareAdKeys = {"c1", "c2", "c3", "c4"}
+currentLandscapeAd = landscapeAdKeys[math.random(1, 4)]
+currentPortraitAd = portraitAdKeys[math.random(1, 4)]
+currentSquareAd = squareAdKeys[math.random(1, 4)]
 '''
 match_indent = true
 
@@ -64,6 +68,7 @@ position = "after"
 payload = '''
 extraDefaultSave = dpf.loadJson("Mods/ExtraStuff/defaultSav.json")
 extrasavedata = dpf.loadJson("savedata/extraMod.sav", extraDefaultSave)
+print("loaded extrasavedata")
 '''
 match_indent = true
 
@@ -121,12 +126,26 @@ pattern = '''
 '''
 position = "after"
 payload = '''
-
+if not getNewAdKeys then
+	landscapeAdKeys = {}
+	portraitAdKeys = {}
+	squareAdKeys = {}
+	for key, value in pairs(sprites.ads.landscape) do
+		table.insert(landscapeAdKeys, key)
+	end
+	for key, value in pairs(sprites.ads.portrait) do
+		table.insert(portraitAdKeys, key)
+	end
+	for key, value in pairs(sprites.ads.square) do
+		table.insert(squareAdKeys, key)
+	end
+	getNewAdKeys = true
+end
 if adTimer < 0 and extrasavedata.robloxAds then
-	currentLandscapeAd = math.random(1, 4)
-	currentPortraitAd = math.random(1, 4)
-	currentSquareAd = math.random(1, 4)
-	adTimer = 10
+	currentLandscapeAd = landscapeAdKeys[math.random(1, #landscapeAdKeys)]
+	currentPortraitAd = portraitAdKeys[math.random(1, #portraitAdKeys)]
+	currentSquareAd = squareAdKeys[math.random(1, #squareAdKeys)]
+	adTimer = 5
 elseif extrasavedata.robloxAds then
 	adTimer = adTimer - d
 end
@@ -216,9 +235,9 @@ if extrasavedata.robloxAds then
 	if shuv.scale == 1 then
 		s = 0.5
 	end
-	love.graphics.draw(sprites.ads.landscape["c" .. currentLandscapeAd], w/2, 0, 0, s, s, 364)
-	love.graphics.draw(sprites.ads.portrait["c" .. currentPortraitAd], 0, h/2, 0, s, s, 0, 300)
-	love.graphics.draw(sprites.ads.square["c" .. currentSquareAd], w, h, 0, s, s, 300, 250)
+	love.graphics.draw(sprites.ads.landscape[currentLandscapeAd], w/2, 0, 0, s, s, 364)
+	love.graphics.draw(sprites.ads.portrait[currentPortraitAd], 0, h/2, 0, s, s, 0, 300)
+	love.graphics.draw(sprites.ads.square[currentSquareAd], w, h, 0, s, s, 300, 250)
 end
 '''
 match_indent = true
