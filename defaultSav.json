@@ -49,6 +49,7 @@
 	"alwaysLoadWorkshop": true,
 	"doneChimaeraFight": false,
 	
+	"alwaysNegativeSC": false,
 	"allInverse": false,
 	"allMine": false,
 	"allTap": false

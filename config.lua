@@ -113,6 +113,8 @@ if config then
 	
 	imgui.Separator()
 	
+	config.alwaysNegativeSC = helpers.InputBool("Always Negative Scrollspeed", (config.alwaysNegativeSC or false))
+	
 	config.allInverse = helpers.InputBool("All Inverses", (config.allInverse or false))
 	--config.allMine = helpers.InputBool("All Mines", (config.allMine or false))
 	config.allTap = helpers.InputBool("All Taps", (config.allTap or false))
