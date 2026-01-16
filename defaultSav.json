@@ -24,6 +24,8 @@
 	
 	"showTags": false,
 	
+	"replayFish": true,
+	
 	"showAccessibility": true,
 	"accessibilityPos": "bottomLeft",
 	

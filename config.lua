@@ -46,6 +46,11 @@ if config then
 	config.randomizeMenuOnStart = helpers.InputBool("Randomize Menu On Start", (config.randomizeMenuOnStart or false))
 
 	imgui.Separator()
+	
+	if type(config.replayFish) == 'nil' then config.replayFish = true end
+	config.replayFish = helpers.InputBool("Replay Fish Dialogue", (config.replayFish or false))
+	
+	imgui.Separator()
 
 	config.showAccessibility = helpers.InputBool("Show Accessibility", (config.showAccessibility or false))
 	config.showAccessibilityOnPause = helpers.InputBool("Only Show Accessibility on Pause", (config.showAccessibilityOnPause or false))
@@ -79,7 +84,7 @@ if config then
 	imgui.Separator()
 	
 	config.openDemoLevelWarning = helpers.InputBool("Editing Demo Warning", (config.openDemoLevelWarning or false))
-
+	
 	imgui.Separator()
 
 	config.randomLevelButton = helpers.InputBool("Random Level Picker (Press R)", (config.randomLevelButton or false))

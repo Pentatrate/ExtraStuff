@@ -1,0 +1,81 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+function st:startShowCatch(fish,new)
+'''
+position = "at"
+payload = '''
+function st:startShowCatch(fish,new,replay)
+local replay = replay or false
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+print('resetting...')
+'''
+position = "after"
+payload = '''
+self.forceShowRodneyText = false
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+if savedata.fishing.hasBook then
+	self.caughtFish = fish
+'''
+position = "before"
+payload = '''
+if not replay then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+sdfunc.save()
+'''
+position = "after"
+payload = '''
+else
+	self.caughtFish = fish
+	self.forceShowRodneyText = true
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+love.graphics.draw(self.fish[id].spr,project.res.cx + fishW,y + fishH,0,1,1,25)
+'''
+position = "at"
+payload = '''
+local scale = 1
+local imgW, imgH = self.fish[id].spr:getDimensions()
+if extrasavedata.replayFish or (type(extrasavedata.replayFish) == "nil") then
+	if mouse.rx >= project.res.cx - imgW/2 and mouse.rx <= project.res.cx + imgW/2 and
+	   mouse.ry >= y and mouse.ry <= y + imgH then
+		scale = 1.2
+		if mouse.pressed == -1 and timesCaught then
+			self:closeBook()
+			self:startShowCatch(id,false,true)
+		end
+	end
+end
+love.graphics.draw(self.fish[id].spr,project.res.cx,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+'''
+match_indent = true
