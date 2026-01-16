@@ -25,7 +25,9 @@ if config then
 		--_G.seeBAFintro = helpers.InputBool("See Blow A Fuse Intro on next Results", (_G.seeBAFintro or false))
 		config.coydressReplaceFoxy = helpers.InputBool("Coydress Instead of Foxy", (config.coydressReplaceFoxy or false))
 		config.alwaysLoadWorkshop = helpers.InputBool("Always load workshop", (config.alwaysLoadWorkshop or true))
-		imgui.Text("Chimaera Fight - not done\nCoydress Instead of Foxy - does nothing\nAlways Load Workshop - not sure if possible")
+		config.showTags = helpers.InputBool("Show Generated Tags for Levels", (config.showTags or false))
+		
+		imgui.Text("Chimaera Fight - not done\nCoydress Instead of Foxy - does nothing\nAlways Load Workshop - not sure if possible\nShow Gen. Tags - works but I don't know \nhow to implement it yet")
 	end
 
 	imgui.Separator()
