@@ -1,5 +1,33 @@
 config = extrasavedata
 
+local function versionCheck(version, actualversion)
+	local function splitVersion(v)
+		local t = {}
+		for part in string.gmatch(v, "[^%.]+") do
+			t[#t+1] = tonumber(part) or 0
+		end
+		return t
+	end
+
+	local v1 = splitVersion(version)
+	local v2 = splitVersion(actualversion)
+
+	local maxLen = math.max(#v1, #v2)
+
+	for i = 1, maxLen do
+		local a = v1[i] or 0
+		local b = v2[i] or 0
+
+		if a > b then
+			return 1
+		elseif a < b then
+			return -1
+		end
+	end
+
+	return 0
+end
+
 imgui.Separator()
 
 seeUnfinished = seeUnfinished or false
@@ -127,7 +155,14 @@ if config then
 		if mods["DetailedAcc"] then
 			if imgui.CollapsingHeader_TreeNodeFlags("Detailed Accuracy by TGTM") then
 				config.detailedacc = config.detailedacc or {}
-				config.detailedacc.moveTapDisplayLeft = helpers.InputBool("Move the Tap Display to the Left", (config.detailedacc.moveTapDisplayLeft or false))
+				if versionCheck(mods["DetailedAcc"].version, "2.0.0") >= 0 then
+					if type(config.detailedacc.moveTapDisplayLeft) == "boolean" then
+						mods["DetailedAcc"].config.KeyPressesRight = not config.detailedacc.moveTapDisplayLeft
+						config.detailedacc.moveTapDisplayLeft = nil
+					end
+				else
+					config.detailedacc.moveTapDisplayLeft = helpers.InputBool("Move the Tap Display to the Left", (config.detailedacc.moveTapDisplayLeft or false))
+				end
 				config.detailedacc.moveTapErrorMeterTop = helpers.InputBool("Move the Tap Error Meter to the Top", (config.detailedacc.moveTapErrorMeterTop or false))
 				
 				local positions = {"topLeft", "topRight", "bottomLeft", "bottomRight"}
