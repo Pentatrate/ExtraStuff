@@ -20,7 +20,7 @@ match_indent = true
 [patches.pattern]
 target = "states/Fishing.lua"
 pattern = '''
-print('resetting...')
+function st:reset()
 '''
 position = "after"
 payload = '''
