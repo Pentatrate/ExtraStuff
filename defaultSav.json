@@ -25,6 +25,7 @@
 	"showTags": false,
 	
 	"replayFish": true,
+	"fishingBookText": false,
 	
 	"showAccessibility": true,
 	"accessibilityPos": "bottomLeft",

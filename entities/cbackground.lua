@@ -1,6 +1,8 @@
 cbackground = class('cbackground', Entity)
 
 function cbackground:initialize(params)
+	self.x = 0
+	self.y = 0
 	self.staticx = 300
 	self.staticy = 180
 	self.staticox = 300
@@ -22,6 +24,10 @@ function cbackground:initialize(params)
 
 	Entity.initialize(self, params)
 	self:anim("anim")
+	
+	if not shuv.showBadColors then
+		shuv.showBadColors = true
+	end
 end
 
 function cbackground:startGlitch()
@@ -75,6 +81,9 @@ function cbackground:anim(anim)
 end
 
 function cbackground:update(dt)
+	if not shuv.showBadColors then
+		shuv.showBadColors = true
+	end
 	-- scrolling
 	self.scrollx = self.scrollx - self.scrollSpeed * dt
 	if self.scrollx <= -self.scrollW then

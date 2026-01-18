@@ -268,4 +268,15 @@ function imguiHelp.drawStringList(label, tbl, options)
     end
 end
 
+function imguiHelp.LabeledSeparator(label, size)
+	local lineY = imgui.GetCursorPosY()
+	imgui.SetWindowFontScale(size)
+	local lineHeight = imgui.GetTextLineHeight()
+	imgui.Text(label)
+	imgui.SameLine()
+	imgui.SetCursorPosY(lineY + lineHeight/2)
+	imgui.Separator()
+	imgui.SetWindowFontScale(1)
+end
+
 return imguiHelp

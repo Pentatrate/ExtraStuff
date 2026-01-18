@@ -57,12 +57,12 @@ if config then
 		
 		imgui.Text("Chimaera Fight - not done\nCoydress Instead of Foxy - does nothing\nAlways Load Workshop - not sure if possible\nShow Gen. Tags - works but I don't know \nhow to implement it yet")
 	end
-
-	imgui.Separator()
+	
+	imguiextra.LabeledSeparator("Main Menu", 1)
 	
 	if imgui.Button("Edit Main Menu Options") then
 		cs:loadMainMenu()
-		cs.reorderMenu = true
+		cs.editMenu = true
 
 		-- return to ingame cursor if the settings say so
 		if savedata.options.game.customCursorInMenu
@@ -72,13 +72,16 @@ if config then
 	end
 	imgui.SameLine()
 	config.randomizeMenuOnStart = helpers.InputBool("Randomize Menu On Start", (config.randomizeMenuOnStart or false))
+	imgui.Text("Press F9 to edit the menu if Mods is hidden.")
+	
+	imguiextra.LabeledSeparator("Songselect", 1)
+	
+	config.openDemoLevelWarning = helpers.InputBool("Editing Demo Warning", (config.openDemoLevelWarning or false))
 
-	imgui.Separator()
+	config.randomLevelButton = helpers.InputBool("Random Level Picker (Press R)", (config.randomLevelButton or false))
+	config.allowRandomLevelFolder = helpers.InputBool("Allow Entering Folder for Random Level", (config.allowRandomLevelFolder or false))
 	
-	if type(config.replayFish) == 'nil' then config.replayFish = true end
-	config.replayFish = helpers.InputBool("Replay Fish Dialogue", (config.replayFish or false))
-	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("In Game", 1)
 
 	config.showAccessibility = helpers.InputBool("Show Accessibility", (config.showAccessibility or false))
 	config.showAccessibilityOnPause = helpers.InputBool("Only Show Accessibility on Pause", (config.showAccessibilityOnPause or false))
@@ -94,8 +97,6 @@ if config then
         end
         imgui.EndCombo()
     end 
-
-	imgui.Separator()
 	
 	if not config.allowedEases then
 		config.allowedEases = {}
@@ -105,41 +106,38 @@ if config then
 		"Allowed Eases in No VFX:",
 		config.allowedEases,
 		{
-			inputWidth = 200
+			inputWidth = 200, addText = " + ", removeText = " - "
 		}
 	)
 	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("Fishing", 1)
 	
-	config.openDemoLevelWarning = helpers.InputBool("Editing Demo Warning", (config.openDemoLevelWarning or false))
+	if type(config.replayFish) == 'nil' then config.replayFish = true end
+	config.replayFish = helpers.InputBool("Replay Fish Dialogue", (config.replayFish or false))
+	config.fishingBookText = helpers.InputBool("Book Texture", (config.fishingBookText or false))
 	
-	imgui.Separator()
-
-	config.randomLevelButton = helpers.InputBool("Random Level Picker (Press R)", (config.randomLevelButton or false))
-	config.allowRandomLevelFolder = helpers.InputBool("Allow Entering Folder for Random Level", (config.allowRandomLevelFolder or false))
-	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("Fun Stuff", 1)
+	imguiextra.LabeledSeparator("-  Arrow Keys", 1)
 	
 	config.arrowKeyControls = helpers.InputBool("Arrow Key Controls", (config.arrowKeyControls or false))
 	config.onlyArrowKeys = helpers.InputBool("Only Arrow Key Controls", (config.onlyArrowKeys or false))
 	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("-  Cranky Moves Towards the Mouse", 1)
 	
 	config.movesTowardsMouse = helpers.InputBool("Cranky Moves Towards the Mouse", (config.movesTowardsMouse or false))
 	config.moveToRadiusCranky = helpers.InputFloat("Distance Cranky Stops", (config.moveToRadiusCranky or 25))
 	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("-  Foxy Jumpscare", 1)
 	
-	config.foxyJumpscare = helpers.InputBool("Withered Foxy Jumpscare", (config.foxyJumpscare or false))
+	config.foxyJumpscare = helpers.InputBool("Do Jumpscare", (config.foxyJumpscare or false))
 	config.foxyJumpscareChance = helpers.InputFloat("Chance (in Percent)", (config.foxyJumpscareChance or 0.1))
 
-	imgui.Separator()
+	imguiextra.LabeledSeparator("-  Ads", 1)
 	
 	config.robloxAds = helpers.InputBool("Ads on the sides", (config.robloxAds or false))
-		imgui.Text("ads are made by noob_y")
+	imgui.Text("ads are made by noob_y")
 	
-	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("-  Modifiers", 1)
 	
 	config.alwaysNegativeSC = helpers.InputBool("Always Negative Scrollspeed", (config.alwaysNegativeSC or false))
 	
@@ -147,7 +145,7 @@ if config then
 	--config.allMine = helpers.InputBool("All Mines", (config.allMine or false))
 	config.allTap = helpers.InputBool("All Taps", (config.allTap or false))
 	
-	imgui.Separator()
+	imguiextra.LabeledSeparator("Extra Configs", 1)
 
 	config.extraConfigOtherMods = helpers.InputBool("Extra Config for Other Mods?", (config.extraConfigOtherMods or false))
 	
@@ -178,10 +176,9 @@ if config then
 				end 
 			end
 		end
-		
-		imgui.Separator()
 	end
 	
+	imgui.Separator()
 	dpf.saveJson("savedata/extraMod.sav", extrasavedata)
 else
 	imgui.Text("ENABLE TO SEE CONFIGS!")

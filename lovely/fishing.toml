@@ -67,15 +67,53 @@ payload = '''
 local scale = 1
 local imgW, imgH = self.fish[id].spr:getDimensions()
 if extrasavedata.replayFish or (type(extrasavedata.replayFish) == "nil") then
-	if mouse.rx >= project.res.cx - imgW/2 and mouse.rx <= project.res.cx + imgW/2 and
-	   mouse.ry >= y and mouse.ry <= y + imgH then
+	local selectedFish = self.orderedFish[self.bookMenu.selection + ((self.bookPage - 1) * self.fishPerPage)]
+	if (mouse.rx >= project.res.cx - imgW/2 and mouse.rx <= project.res.cx + imgW/2 and
+	   mouse.ry >= y and mouse.ry <= y + imgH) or (selectedFish == id) then
 		scale = 1.2
-		if mouse.pressed == -1 and timesCaught then
+		if (mouse.pressed == -1 or maininput:pressed("accept")) and timesCaught then
 			self:closeBook()
 			self:startShowCatch(id,false,true)
 		end
 	end
 end
 love.graphics.draw(self.fish[id].spr,project.res.cx,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+self.pauseMenu:draw()
+		local pp = self.pauseMenu.pausePosition
+		if pp.w > 0 then
+'''
+position = "at"
+payload = '''
+		local pp = self.pauseMenu.pausePosition
+		if pp.w <= 0 or not extrasavedata.fishingBookText then
+			self.pauseMenu:draw()
+		end
+		if pp.w > 0 then
+if extrasavedata.fishingBookText then
+	color()
+	love.graphics.draw(sprites.fishing.viewbook, 300, 180, 0, pp.w/220, 1, 324, 162)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+self.bookMenu:addNumber('fish_bookPage',self,'bookPage',0,nil,{1,self.bookTotalPages},nil,self.bookTotalPages)
+'''
+position = "before"
+payload = '''
+self.bookMenu:addOption('',function() end, 100)
+self.bookMenu:addOption('',function() end, 100)
+self.bookMenu:addOption('',function() end, 100)
+self.bookMenu:addOption('',function() end, 100)
 '''
 match_indent = true

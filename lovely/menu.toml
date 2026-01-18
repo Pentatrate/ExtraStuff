@@ -12,7 +12,7 @@ st:setFgDraw(function(self)
 position = "after"
 payload = '''
 if maininput:down("f9") then
-	self.reorderMenu = true
+	self.editMenu = true
 end
 
 if self.chimaera then
@@ -45,8 +45,8 @@ local function shuffle(t)
 	end
 end
 
-if self.reorderMenu then
-	self.reorderMenu = imgui.Begin("Reorder Menu", true)
+if self.editMenu then
+	self.editMenu = imgui.Begin("Edit Menu", true)
 
 	imguiextra.DrawReorderableRadialList(self.mainMenu, "mainMenu", {imgui.GetContentRegionAvail().x, 24})
 
@@ -68,7 +68,7 @@ if self.reorderMenu then
 	
 	if imgui.love.GetWantCaptureMouse() then
 		love.mouse.setVisible(true)
-	else
+	elseif savedata.options.game.customCursorInMenu and (savedata.options.game.cursorMode ~= "default") then
 		love.mouse.setVisible(false)
 	end
 end
@@ -94,5 +94,33 @@ if extrasavedata.randomizeMenuOnStart then
 	end
 	self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
 end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+self.bg = self.bg or em.init('MenuBackground')
+'''
+position = "at"
+payload = '''
+if false then
+	self.bg = self.bg or em.init('cbackground')
+else
+	self.bg = self.bg or em.init('MenuBackground')
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/AtomMap.lua"
+pattern = '''
+shuv.pal[7] = { r = 63, g = 38, b = 255 }
+'''
+position = "after"
+payload = '''
+shuv.showBadColors = true
 '''
 match_indent = true
