@@ -26,6 +26,7 @@
 	
 	"replayFish": true,
 	"fishingBookText": false,
+	"fishPerPage": 4,
 	
 	"showAccessibility": true,
 	"accessibilityPos": "bottomLeft",

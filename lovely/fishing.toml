@@ -60,15 +60,86 @@ match_indent = true
 [patches.pattern]
 target = "states/Fishing.lua"
 pattern = '''
+flux.to(self.pauseMenu.pausePosition,60,{w=220}):ease("inOutExpo")
+'''
+position = "at"
+payload = '''
+local width = 220
+if self.fishPerPage > 8 then
+	width = 440
+end
+flux.to(self.pauseMenu.pausePosition,60,{w=width}):ease("inOutExpo")
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+local id = self.orderedFish[i]
+'''
+position = "after"
+payload = '''
+local index = i - startIndex
+local columns = 1
+if self.fishPerPage >= 5 and self.fishPerPage <= 8 then
+    columns = 2
+elseif self.fishPerPage > 8 then
+    columns = 4
+end
+
+local spacingX = 110
+local spacingY = 70
+
+local col = index % columns
+local row = math.floor(index / columns) - 1
+
+local x = project.res.cx + (col - (columns-1)/2) * spacingX
+y = 100 + row * spacingY
+local scale = 1
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+local y = 100 + (i-startIndex-1) * 70
+'''
+position = "after"
+payload = '''
+local index = i - startIndex
+local columns = 1
+if self.fishPerPage >= 5 and self.fishPerPage <= 8 then
+    columns = 2
+elseif self.fishPerPage > 8 then
+    columns = 4
+end
+
+local spacingX = 110
+local spacingY = 70
+
+local col = index % columns
+local row = math.floor(index / columns) - 1
+
+local x = project.res.cx + (col - (columns-1)/2) * spacingX
+y = 100 + row * spacingY
+local scale = 1
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
 love.graphics.draw(self.fish[id].spr,project.res.cx + fishW,y + fishH,0,1,1,25)
 '''
 position = "at"
 payload = '''
-local scale = 1
 local imgW, imgH = self.fish[id].spr:getDimensions()
-if extrasavedata.replayFish or (type(extrasavedata.replayFish) == "nil") then
+if extrasavedata.replayFish ~= false then
 	local selectedFish = self.orderedFish[self.bookMenu.selection + ((self.bookPage - 1) * self.fishPerPage)]
-	if (mouse.rx >= project.res.cx - imgW/2 and mouse.rx <= project.res.cx + imgW/2 and
+	if (mouse.rx >= x - imgW/2 and mouse.rx <= x + imgW/2 and
 	   mouse.ry >= y and mouse.ry <= y + imgH) or (selectedFish == id) then
 		scale = 1.2
 		if (mouse.pressed == -1 or maininput:pressed("accept")) and timesCaught then
@@ -77,7 +148,46 @@ if extrasavedata.replayFish or (type(extrasavedata.replayFish) == "nil") then
 		end
 	end
 end
-love.graphics.draw(self.fish[id].spr,project.res.cx,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+love.graphics.draw(self.fish[id].spr,x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+love.graphics.printf(fishText,1,y+42,(project.res.x-2),'center',0,1,1)
+love.graphics.printf(fishText,3,y+42,(project.res.x-2),'center',0,1,1)
+love.graphics.printf(fishText,2,y+41,(project.res.x-2),'center',0,1,1)
+love.graphics.printf(fishText,2,y+43,(project.res.x-2),'center',0,1,1)
+'''
+position = "at"
+payload = '''
+love.graphics.printf(fishText,x-imgW*2-1,y+42,imgW*4,'center',0,1,1)
+love.graphics.printf(fishText,x-imgW*2+1,y+42,imgW*4,'center',0,1,1)
+love.graphics.printf(fishText,x-imgW*2,y+41,imgW*4,'center',0,1,1)
+love.graphics.printf(fishText,x-imgW*2,y+43,imgW*4,'center',0,1,1)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+	love.graphics.printf(fishText,2,y+42,(project.res.x-2),'center',0,1,1)
+end
+'''
+position = "at"
+payload = '''
+	love.graphics.printf(fishText,x-imgW*2,y+42,imgW*4,'center',0,1,1)
+else
+	local imgW, imgH = sprites.fishing.unknownfish:getDimensions()
+	if (mouse.rx >= x - imgW/2 and mouse.rx <= x + imgW/2 and
+	   mouse.ry >= y and mouse.ry <= y + imgH) or ((self.bookMenu.selection + ((self.bookPage - 1) * self.fishPerPage)) == i) then
+		scale = 1.2
+	end
+	love.graphics.draw(sprites.fishing.unknownfish,x,y + imgH/2,0,scale,scale,25, 20)
+end
 '''
 match_indent = true
 
@@ -98,7 +208,13 @@ payload = '''
 		if pp.w > 0 then
 if extrasavedata.fishingBookText then
 	color()
-	love.graphics.draw(sprites.fishing.viewbook, 300, 180, 0, pp.w/220, 1, 324, 162)
+	if self.fishPerPage <= 8 then
+		love.graphics.draw(sprites.fishing.viewbook, 300, 180, 0, pp.w/220, 1, 325, 162)
+		love.graphics.draw(sprites.fishing.viewbooktag, 300, 180, 0, pp.w/220, 1, 108, 162)
+	else
+		love.graphics.draw(sprites.fishing.viewbook2, 300, 180, 0, pp.w/440, 1, 217, 162)
+		love.graphics.draw(sprites.fishing.viewbooktag, 300, 180, 0, pp.w/440, 1, 108, 162)
+	end
 end
 '''
 match_indent = true
@@ -111,9 +227,32 @@ self.bookMenu:addNumber('fish_bookPage',self,'bookPage',0,nil,{1,self.bookTotalP
 '''
 position = "before"
 payload = '''
-self.bookMenu:addOption('',function() end, 100)
-self.bookMenu:addOption('',function() end, 100)
-self.bookMenu:addOption('',function() end, 100)
-self.bookMenu:addOption('',function() end, 100)
+for i = 1, self.fishPerPage do
+	self.bookMenu:addOption('',function() end, 100)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+self.fishPerPage = 4
+'''
+position = "at"
+payload = '''
+self.fishPerPage = extrasavedata.fishPerPage or 4
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
+self.bookMenu:setSelection(1)
+'''
+position = "at"
+payload = '''
+self.bookMenu:setSelection(self.fishPerPage + 1)
 '''
 match_indent = true

@@ -116,6 +116,16 @@ if config then
 	config.replayFish = helpers.InputBool("Replay Fish Dialogue", (config.replayFish or false))
 	config.fishingBookText = helpers.InputBool("Book Texture", (config.fishingBookText or false))
 	
+	if not config.fishPerPage then
+		config.fishPerPage = 4
+	end
+	
+	local fishPerPageBuf = ffi.new("int[1]", config.fishPerPage or 4)
+
+	if imgui.InputInt("Fish Per Page", fishPerPageBuf) then
+		config.fishPerPage = helpers.clamp(fishPerPageBuf[0], 1, 16)
+	end
+	
 	imguiextra.LabeledSeparator("Fun Stuff", 1)
 	imguiextra.LabeledSeparator("-  Arrow Keys", 1)
 	
