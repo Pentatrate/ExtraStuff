@@ -215,7 +215,7 @@ if project.showFPS then
 position = "before"
 payload = '''
 if jumpscareActive and jumpscareInst then
-	jumpscareInst:draw(0, 0, 0, 0.95 * shuv.scale, 0.95 * shuv.scale)
+	jumpscareInst:draw(0, 0, 0, 1.9 * shuv.scale, 1.9 * shuv.scale)
 -- inst:draw(x,y,r,sx,sy,ox,oy,kx,ky)
 end
 '''

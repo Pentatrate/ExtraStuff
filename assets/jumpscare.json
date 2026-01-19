@@ -1,7 +1,7 @@
 {
   "fps": 24,
-  "width": 640,
-  "height": 480,
+  "width": 320,
+  "height": 240,
   "frames": 13,
   "loop": false
 }
