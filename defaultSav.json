@@ -17,6 +17,31 @@
 	],
 	"disabledMainOptions": [
 	],
+	"moreMMenuCustomization": {
+		"enabled": false,
+		"backgroundEntity": "MenuBackground",
+		"bgParams": {},
+		"radialList": {
+			"radius": 500,
+			"x": 300,
+			"y": 750,
+			"circleWidth": 72,
+			"angleOffset": 0,
+			"activeArc": 1.570,
+			"iconDistance": 0.261
+		},
+		"palette": {
+			"0": {"r":255,"g":255,"b":255},
+			"1": {"r":0,"g":0,"b":0},
+			"2": {"r":205,"g":205,"b":205},
+			"3": {"r":255,"g":52,"b":50},
+			"4": {"r":224,"g":277,"b":0},
+			"5": {"r":44,"g":255,"b":57},
+			"6": {"r":0,"g":222,"b":229},
+			"7": {"r":63,"g":38,"b":255}
+		}
+	},
+	
 	"randomizeMenuOnStart": false,
 	
 	"allowedEases": [

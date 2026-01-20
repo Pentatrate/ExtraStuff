@@ -4,6 +4,16 @@ local function swap(t, a, b)
     t[a], t[b] = t[b], t[a]
 end
 
+function imguiHelp.IntInput(label, value)
+	local buf = ffi.new("int[1]", value or 0)
+	local val = value
+	if imgui.InputInt(label, buf) then
+		val = buf[0]
+	end
+	
+	return val
+end
+
 function imguiHelp.DrawReorderableList(imgui, items, list_id, size)
     list_id = list_id or "reorder"
 	local bsize = size or {30, 16}
@@ -168,15 +178,19 @@ function imguiHelp.Dropdown(label, positions, currentValue)
     return positions[selectedIndex]
 end
 
-local function drawValue(label, value, setter, parentTable)
+function imguiHelp.drawValue(label, value, setter, allowedTypes)
     local t = type(value)
 
+    if allowedTypes and not allowedTypes[t] then
+        return
+    end
+
     if t == "number" then
-        local v = ffi.new("float[1]", value)
-        if imgui.DragFloat(label, v, 0.1, -1e9, 1e9, "%.3f", 0) then
+        local v = ffi.new("int[1]", value)
+        if imgui.InputInt(label, v) then
             setter(v[0])
         end
-
+		
     elseif t == "string" then
         local buf = ffi.new("char[256]", value)
         if imgui.InputText(label, buf, 256, 0, nil, nil) then
@@ -189,14 +203,6 @@ local function drawValue(label, value, setter, parentTable)
             setter(b[0])
         end
 
---[[    elseif t == "function" then
-        if imgui.Button(label, {0, 0}) then
-            local ok, err = pcall(value, parentTable)
-            if not ok then
-                print("Function '" .. label .. "' error:", err)
-            end
-        end
-]]
     elseif t == "table" then
         if imgui.TreeNode_Str(label) then
             imguiHelp.drawTable(value)
@@ -208,17 +214,21 @@ local function drawValue(label, value, setter, parentTable)
     end
 end
 
-function imguiHelp.drawTable(tbl)
+function imguiHelp.drawTable(tbl, types, skipkeys)
     for k, v in pairs(tbl) do
-        imgui.PushID_Str(tostring(k))
-        drawValue(
-            tostring(k),
-            v,
-            function(newVal)
-                tbl[k] = newVal
-            end
-        )
-        imgui.PopID()
+		if skipkeys and skipkeys[k] then
+			goto continue
+		end
+		imgui.PushID_Str(tostring(k))
+		imguiHelp.drawValue(
+			tostring(k),
+			v,
+			function(newVal)
+				tbl[k] = newVal
+			end, types
+		)
+		imgui.PopID()
+		::continue::
     end
 end
 
@@ -269,8 +279,9 @@ function imguiHelp.drawStringList(label, tbl, options)
 end
 
 function imguiHelp.LabeledSeparator(label, size)
+	local s = size or 1
 	local lineY = imgui.GetCursorPosY()
-	imgui.SetWindowFontScale(size)
+	imgui.SetWindowFontScale(s)
 	local lineHeight = imgui.GetTextLineHeight()
 	imgui.Text(label)
 	imgui.SameLine()

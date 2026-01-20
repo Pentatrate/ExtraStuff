@@ -64,6 +64,90 @@ if self.editMenu then
 	end
 
 	self.mainMenu:saveList(self.mainMenu, "mainMenuList", "disabledMainOptions")
+	
+	imguiextra.LabeledSeparator("More Customization", 1)
+	if not extrasavedata.moreMMenuCustomization then
+		extrasavedata.moreMMenuCustomization = helpers.copytable(extraDefaultSave.moreMMenuCustomization)
+	end
+	if extrasavedata.moreMMenuCustomization then
+		extrasavedata.moreMMenuCustomization.enabled = helpers.InputBool("More Customization", (extrasavedata.moreMMenuCustomization.enabled or false))
+		if extrasavedata.moreMMenuCustomization.enabled then
+			--local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "TrumpetGirl", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "DecoAtomMap", "MonitorTheme"}
+			local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
+			
+			imguiextra.LabeledSeparator("Background Entity", 1)
+			if imgui.BeginCombo("", extrasavedata.moreMMenuCustomization.backgroundEntity) then
+				for i, v in ipairs(backgroundEntities) do
+					local isSelected = (v == extrasavedata.moreMMenuCustomization.backgroundEntity)
+					if imgui.Selectable_Bool(v, isSelected) then
+						extrasavedata.moreMMenuCustomization.backgroundEntity = v
+						local param = em.init(v)
+						self.bgparams = helpers.copytable(param)
+						param.delete = true
+					end
+				end
+				imgui.EndCombo()
+			end
+			if imgui.CollapsingHeader_TreeNodeFlags("Parameters") then
+				if type(self.bgparams or nil) == "table" then
+					imguiHelp.drawTable(self.bgparams, {boolean = true, number = true, string = true}, {skipRender = true, skipUpdate = true, delete = true})
+					local function extractValues(tbl, allowedTypes)
+						local result = {}
+						for k, v in pairs(tbl) do
+							local t = type(v)
+							if allowedTypes[t] then
+								result[k] = v
+							end
+						end
+						return result
+					end
+					extrasavedata.moreMMenuCustomization.bgParams = extractValues(self.bgparams, {boolean = true, number = true, string = true})
+				else
+					self.bgparams = helpers.copy(extrasavedata.moreMMenuCustomization.bgParams)
+				end
+				if imgui.Button("Clear Params") then
+					self.clearBGParams = true
+					extrasavedata.moreMMenuCustomization.bgParams = {}
+				end
+			end
+			
+			imguiextra.LabeledSeparator("Colors", 1)
+			for i = 0, 7 do
+				local color = shuv.pal[i]
+				color.r, color.g, color.b = helpers.imguiColor(tostring(i), color.r, color.g, color.b)
+				extrasavedata.moreMMenuCustomization.palette[tostring(i)] = helpers.copy(color)
+			end
+			if imgui.Button("Reset Colors") then
+				shuv.resetPal()
+				shuv.pal[2] = {r= 205, g=205, b=205}
+				shuv.pal[3] = {r= 255, g=52, b=50}
+				shuv.pal[4] = {r= 224, g=227, b=0}
+				shuv.pal[5] = {r= 44, g=255, b=57}
+				shuv.pal[6] = {r= 0, g=222, b=229}
+				shuv.pal[7] = {r= 63, g=38, b=255}
+				for i = 0, 7 do
+					local color = shuv.pal[i]
+					extrasavedata.moreMMenuCustomization.palette[tostring(i)] = helpers.copy(color)
+				end
+			end
+		end
+	end
+	imgui.Separator()
+	if imgui.Button("Reload") then
+		if self.clearBGParams then
+			extrasavedata.moreMMenuCustomization.bgParams = {}
+		end
+		cs = bs.load('Menu')
+		self.menuMusicManager:clearOnBeatHooks()
+		cs.menuMusicManager = self.menuMusicManager
+		cs:init()
+
+		-- return to ingame cursor if the settings say so
+		if savedata.options.game.customCursorInMenu and (savedata.options.game.cursorMode ~= "default") then
+			love.mouse.setVisible(false)
+		end
+	end
+	
 	imgui.End()
 	
 	if imgui.love.GetWantCaptureMouse() then
@@ -71,6 +155,7 @@ if self.editMenu then
 	elseif savedata.options.game.customCursorInMenu and (savedata.options.game.cursorMode ~= "default") then
 		love.mouse.setVisible(false)
 	end
+	
 end
 '''
 match_indent = true
@@ -105,11 +190,98 @@ self.bg = self.bg or em.init('MenuBackground')
 '''
 position = "at"
 payload = '''
-if false then
-	self.bg = self.bg or em.init('cbackground')
+self.bgparams = {}
+if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization.enabled and em.entities[extrasavedata.moreMMenuCustomization.backgroundEntity] then
+	shuv.resetPal()
+	local palette = extrasavedata.moreMMenuCustomization.palette
+	for i = 0, 7 do
+		local key = tostring(i)
+		shuv.pal[i] = { 
+			r = palette[key].r,
+			g = palette[key].g,
+			b = palette[key].b
+		}
+	end
+	self.bgparams = extrasavedata.moreMMenuCustomization.bgParams
+	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
 else
 	self.bg = self.bg or em.init('MenuBackground')
 end
+'''
+match_indent = true
+
+#[[patches]]
+#[patches.pattern]
+#target = "states/AtomMap.lua"
+#pattern = '''
+#self.p = em.init("Player", { x = 0, y = project.res.cy })
+#'''
+#position = "at"
+#payload = '''
+#self.p = em.init("Player", { x = project.res.cx - 100, y = project.res.cy })
+#'''
+#match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/AtomMap.lua"
+pattern = '''
+self.bg = self.bg or em.init("MenuBackground")
+'''
+position = "at"
+payload = '''
+self.bgparams = {}
+if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization.enabled and em.entities[extrasavedata.moreMMenuCustomization.backgroundEntity] then
+	shuv.resetPal()
+	local palette = extrasavedata.moreMMenuCustomization.palette
+	for i = 0, 7 do
+		local key = tostring(i)
+		shuv.pal[i] = { 
+			r = palette[key].r,
+			g = palette[key].g,
+			b = palette[key].b
+		}
+	end
+	self.bgparams = extrasavedata.moreMMenuCustomization.bgParams
+	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
+else
+	self.bg = self.bg or em.init('MenuBackground')
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/AtomMap.lua"
+pattern = '''
+		shuv.drawWithPalette(function()
+			love.graphics.draw(self.bgCanv)
+		end, {
+			[0] = { r = 255, g = 255, b = 255 },
+			[1] = { r = 0, g = 0, b = 0 },
+			[2] = { r = 205, g = 205, b = 205 },
+			[3] = { r = 255, g = 52, b = 50 },
+			[4] = { r = 224, g = 227, b = 0 },
+			[5] = { r = 44, g = 255, b = 57 },
+			[6] = { r = 0, g = 222, b = 229 },
+			[7] = { r = 63, g = 38, b = 255 },
+		})
+'''
+position = "at"
+payload = '''
+	local palette = extrasavedata.moreMMenuCustomization.palette
+	local pal = {}
+	for i = 0, 7 do
+		local key = tostring(i)
+		pal[i] = { 
+			r = palette[key].r,
+			g = palette[key].g,
+			b = palette[key].b
+		}
+	end
+		shuv.drawWithPalette(function()
+			love.graphics.draw(self.bgCanv)
+		end, pal)
 '''
 match_indent = true
 
@@ -122,5 +294,134 @@ shuv.pal[7] = { r = 63, g = 38, b = 255 }
 position = "after"
 payload = '''
 shuv.showBadColors = true
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/damoclism/DamoclismBG.lua"
+pattern = '''
+	self.i = self.i + dt*self.spinSpeed*cs.rateMod
+	self.crystalSpin = self.crystalSpin + self.crystalSpinSpeed*dt*cs.rateMod
+	self.swordRingSpin = self.swordRingSpin + self.swordRingSpinSpeed*dt*cs.rateMod
+'''
+position = "at"
+payload = '''
+	self.i = self.i + dt*self.spinSpeed*(cs.rateMod or 1)
+	self.crystalSpin = self.crystalSpin + self.crystalSpinSpeed*dt*(cs.rateMod or 1)
+	self.swordRingSpin = self.swordRingSpin + self.swordRingSpinSpeed*dt*(cs.rateMod or 1)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/BEATROCK/HoleBackground.lua"
+pattern = '''
+	self.spawnTimer = self.spawnTimer - (cs.cBeat - self.lastbeat)
+	self.lastbeat = cs.cBeat
+'''
+position = "before"
+payload = '''
+	if not cs.cBeat or cs.noBeat then
+		cs.cBeat = (cs.cBeat or 0) + dt/60
+		cs.noBeat = true
+	end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/tutorial/TutorialBG.lua"
+pattern = '''
+dt = dt*cs.rateMod
+'''
+position = "before"
+payload = '''
+if not cs.rateMod then
+	cs.rateMod = 1
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/orchids/Plasma.lua"
+pattern = '''
+dt = dt*cs.rateMod
+'''
+position = "before"
+payload = '''
+if not cs.rateMod then
+	cs.rateMod = 1
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/orchids/SineWaves.lua"
+pattern = '''
+dt = dt*cs.rateMod
+'''
+position = "before"
+payload = '''
+if not cs.rateMod then
+	cs.rateMod = 1
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/rain/Rain.lua"
+pattern = '''
+dt = dt*cs.rateMod
+'''
+position = "before"
+payload = '''
+if not cs.rateMod then
+	cs.rateMod = 1
+	cs.noratemod = true
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/rain/Rain.lua"
+pattern = '''
+function Rain:draw()
+'''
+position = "after"
+payload = '''
+if cs.noratemod then
+	self:drawBG()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/lawrence/LawrenceBG.lua"
+pattern = '''
+prof.push("LawrenceBG update")
+'''
+position = "after"
+payload = '''
+if not cs.rateMod then
+	cs.rateMod = 1
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/lawrence/LawrenceBG.lua"
+pattern = '''
+self.cumulativeAngle = self.cumulativeAngle + cs.p.angleDelta
+'''
+position = "at"
+payload = '''
+self.cumulativeAngle = self.cumulativeAngle + (cs.p and cs.p.angleDelta or 0)
 '''
 match_indent = true
