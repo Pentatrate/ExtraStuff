@@ -81,6 +81,12 @@ if config then
 	config.randomLevelButton = helpers.InputBool("Random Level Picker (Press R)", (config.randomLevelButton or false))
 	config.allowRandomLevelFolder = helpers.InputBool("Allow Entering Folder for Random Level", (config.allowRandomLevelFolder or false))
 	
+	imguiextra.LabeledSeparator("Editor", 1)
+	if not config.randomSongs then
+		config.randomSongs = true
+	end
+	config.randomSongs = helpers.InputBool("Enabled Random Songs", (config.randomSongs or false))
+	
 	imguiextra.LabeledSeparator("In Game", 1)
 
 	config.showAccessibility = helpers.InputBool("Show Accessibility", (config.showAccessibility or false))
