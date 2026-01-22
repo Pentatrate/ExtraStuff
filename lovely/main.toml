@@ -11,7 +11,7 @@ ffi = require "ffi"
 '''
 position = "after"
 payload = '''
-tagSystem = require("Mods.ExtraStuff.lib.tagSystem")
+tags = require("Mods.ExtraStuff.lib.tagSystem")
 imguiextra = require("Mods.ExtraStuff.lib.imguiextra")
 
 testtext = ""

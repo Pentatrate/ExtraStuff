@@ -58,6 +58,98 @@ function tags.addTag(out, mod, name)
 	end
 end
 
+function tags.getEndTime(leveldata)
+	for i, ev in ipairs(leveldata.events) do
+		if ev.type == "showResults" then
+            return ev.time
+        elseif i == #leveldata.events then
+			return ev.time
+		end
+	end
+	return 0
+end
+--[[        if ev.type == "extraTap" or ev.tap or ev.endTap
+            or ev.type == "block"
+            or ev.type == "mine"
+            or ev.type == "inverse"
+            or ev.type == "hold"
+            or ev.type == "mineHold"
+            or ev.type == "bounce"
+            or ev.type == "side"]]
+function tags.getFullCombo(leveldata)
+	local hits = 0
+	local hittableNotes = {
+		block = true,
+		hold = true,
+		mine = true,
+		mineHold = true,
+		inverse = true,
+		side = true,
+		bounce = true,
+		extraTap = true
+	}
+	for i, ev in ipairs(leveldata.events) do
+		if hittableNotes[ev.type] then
+			if ev.type == "extraTap" then
+				hits = hits + 1
+			end
+			if ev.type == "block" or ev.type == "inverse" or ev.type == "side" or ev.type == "mine" or ev.type == "mineHold" then
+				if ev.tap then
+					hits = hits + 1
+				end
+				hits = hits + 1
+			end
+			if ev.type == "hold" then
+				hits = hits + 2
+				if ev.tap then
+					hits = hits + 1
+				end
+				if ev.endTap then
+					hits = hits + 1
+				end
+			end
+			if ev.type == "bounce" then
+				hits = hits + 1 + ev.bounces
+				if ev.tap then
+					hits = hits + 1 + ev.bounces
+				end
+			end
+		end
+	end
+	return hits
+end
+
+function tags.calculateLevelLength(timingInfo, endBeat)
+	if not timingInfo or not timingInfo.initial then return 0 end
+	if not endBeat then endBeat = tags.getEndTime(cs.levelData) end
+
+	local bpm = timingInfo.initial.bpm
+	local lastBeat = timingInfo.initial.beatOffset
+	local length = 0
+
+	local points = timingInfo.timingPoints or {}
+
+	for _, tp in ipairs(points) do
+		if tp.beat >= endBeat then
+			break
+		end
+
+		local beatDelta = tp.beat - lastBeat
+		if beatDelta > 0 then
+			length = length + (beatDelta / bpm) * 60
+		end
+
+		lastBeat = tp.beat
+		bpm = tp.bpm
+	end
+	
+	if endBeat > (lastBeat or 0) and bpm then
+		length = length + ((endBeat - (lastBeat or 0)) / bpm) * 60
+	end
+
+	return length
+end
+
 function tags.generateTags(leveldata, testSave)
     local returnedTags = {}
     

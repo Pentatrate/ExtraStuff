@@ -105,6 +105,7 @@ if self.editMenu then
 				else
 					self.bgparams = helpers.copy(extrasavedata.moreMMenuCustomization.bgParams)
 				end
+				imgui.TextWrapped("If you crash your game after reloading. Go to savedata\\extraMod.sav")
 				if imgui.Button("Clear Params") then
 					self.clearBGParams = true
 					extrasavedata.moreMMenuCustomization.bgParams = {}
@@ -113,9 +114,9 @@ if self.editMenu then
 			
 			imguiextra.LabeledSeparator("Colors", 1)
 			for i = 0, 7 do
-				local color = shuv.pal[i]
+				local color = extrasavedata.moreMMenuCustomization.palette[tostring(i)]
 				color.r, color.g, color.b = helpers.imguiColor(tostring(i), color.r, color.g, color.b)
-				extrasavedata.moreMMenuCustomization.palette[tostring(i)] = helpers.copy(color)
+				shuv.pal[i] = helpers.copy(color)
 			end
 			if imgui.Button("Reset Colors") then
 				shuv.resetPal()
@@ -210,18 +211,6 @@ end
 '''
 match_indent = true
 
-#[[patches]]
-#[patches.pattern]
-#target = "states/AtomMap.lua"
-#pattern = '''
-#self.p = em.init("Player", { x = 0, y = project.res.cy })
-#'''
-#position = "at"
-#payload = '''
-#self.p = em.init("Player", { x = project.res.cx - 100, y = project.res.cy })
-#'''
-#match_indent = true
-
 [[patches]]
 [patches.pattern]
 target = "states/AtomMap.lua"
@@ -267,8 +256,9 @@ pattern = '''
 			[7] = { r = 63, g = 38, b = 255 },
 		})
 '''
-position = "at"
+position = "after"
 payload = '''
+	if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization.enabled then
 	local palette = extrasavedata.moreMMenuCustomization.palette
 	local pal = {}
 	for i = 0, 7 do
@@ -282,6 +272,7 @@ payload = '''
 		shuv.drawWithPalette(function()
 			love.graphics.draw(self.bgCanv)
 		end, pal)
+	end
 '''
 match_indent = true
 
@@ -423,5 +414,19 @@ self.cumulativeAngle = self.cumulativeAngle + cs.p.angleDelta
 position = "at"
 payload = '''
 self.cumulativeAngle = self.cumulativeAngle + (cs.p and cs.p.angleDelta or 0)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/level/lawrence/LawrenceBG.lua"
+pattern = '''
+function ShinamonBG:update(dt)
+'''
+position = "after"
+payload = '''
+if not cs.rateMod then
+	cs.rateMod = 1
+end
 '''
 match_indent = true

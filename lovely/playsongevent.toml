@@ -15,18 +15,38 @@ end
 '''
 position = "after"
 payload = '''
-if extrasavedata.randomSongs ~= false then
-	local validEntries = {{bpm = event.bpm, timeOffsetSeconds = event.offset, beatOffset = event.time, file = event.file}}
-	if love.filesystem.exists(cLevel.."randomSongs.json") then
-		local entries = dpf.loadJson(cLevel.."randomSongs.json", {})
-		for _, v in ipairs(entries) do
-			if love.filesystem.exists(cLevel..v.file) then
-				table.insert(validEntries, {bpm = v.bpm or event.bpm, timeOffsetSeconds = v.offset or event.offset, beatOffset = event.time, file = v.file})
-			else
-				print(cLevel..v.file .. " doesn't exist what the freak")
-			end
+local validEntries = {}
+local entryList = {} -- {{ name = "...", index = N }}
+
+table.insert(validEntries, {
+    bpm = event.bpm,
+    timeOffsetSeconds = event.offset,
+    beatOffset = event.time,
+    file = event.file
+})
+
+table.insert(entryList, {
+    name = "Normal",
+    index = #validEntries
+})
+
+if love.filesystem.exists(cLevel.."randomSongs.json") then
+	local entries = dpf.loadJson(cLevel.."randomSongs.json", {})
+	for _, v in ipairs(entries) do
+		if love.filesystem.exists(cLevel..v.file) then
+			table.insert(validEntries, {bpm = v.bpm or event.bpm, timeOffsetSeconds = v.offset or event.offset, beatOffset = event.time, file = v.file})
+			local displayName = v.name or v.file
+			table.insert(entryList, {name = displayName, index = #validEntries})
+		else
+			print(cLevel..v.file .. " doesn't exist what the freak")
 		end
 	end
+end
+
+--if type(cs.level.properties.songChoice) == "number" and false then
+--	event = helpers.copy(validEntries[helpers.clamp(cs.chosenIndex, 1, #validEntries)])
+--else
+if extrasavedata.randomSongs ~= false then
 	event = helpers.copy(validEntries[math.random(1, #validEntries)])
 end
 '''

@@ -56,6 +56,11 @@
 	"showAccessibility": true,
 	"accessibilityPos": "bottomLeft",
 	
+	"chartinfoplus": {
+		"enabled": false,
+		"levelLength": true,
+		"fullCombo": true
+	},
 	"randomLevelButton": true,
 	"allowRandomLevelFolder": false,
 	

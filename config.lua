@@ -76,6 +76,16 @@ if config then
 	
 	imguiextra.LabeledSeparator("Songselect", 1)
 	
+	if not config.chartinfoplus then
+		config.chartinfoplus = helpers.copy(extraDefaultSave.chartinfoplus)
+	end
+	config.chartinfoplus.enabled = helpers.InputBool("More Chart Info", (config.chartinfoplus.enabled or false))
+	if config.chartinfoplus.enabled then
+		config.chartinfoplus.levelLength = helpers.InputBool("Show Level Length", (config.chartinfoplus.levelLength or false))
+		config.chartinfoplus.fullCombo = helpers.InputBool("Show Full Combo", (config.chartinfoplus.fullCombo or false))
+		imgui.Separator()
+	end
+	
 	config.openDemoLevelWarning = helpers.InputBool("Editing Demo Warning", (config.openDemoLevelWarning or false))
 
 	config.randomLevelButton = helpers.InputBool("Random Level Picker (Press R)", (config.randomLevelButton or false))
@@ -88,7 +98,12 @@ if config then
 	config.randomSongs = helpers.InputBool("Enabled Random Songs", (config.randomSongs or false))
 	
 	imguiextra.LabeledSeparator("In Game", 1)
-
+	
+	if type(config.randomSongs) = "nil" then
+		config.randomSongs = true
+	end
+	config.randomSongs = helpers.InputBool("Allow Random Song", (config.randomSongs or false))
+	
 	config.showAccessibility = helpers.InputBool("Show Accessibility", (config.showAccessibility or false))
 	config.showAccessibilityOnPause = helpers.InputBool("Only Show Accessibility on Pause", (config.showAccessibilityOnPause or false))
 

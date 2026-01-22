@@ -186,8 +186,8 @@ function imguiHelp.drawValue(label, value, setter, allowedTypes)
     end
 
     if t == "number" then
-        local v = ffi.new("int[1]", value)
-        if imgui.InputInt(label, v) then
+        local v = ffi.new("float[1]", value)
+        if imgui.InputFloat(label, v) then
             setter(v[0])
         end
 		
