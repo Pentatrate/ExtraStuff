@@ -99,7 +99,7 @@ if config then
 	
 	imguiextra.LabeledSeparator("In Game", 1)
 	
-	if type(config.randomSongs) = "nil" then
+	if type(config.randomSongs) == "nil" then
 		config.randomSongs = true
 	end
 	config.randomSongs = helpers.InputBool("Allow Random Song", (config.randomSongs or false))
