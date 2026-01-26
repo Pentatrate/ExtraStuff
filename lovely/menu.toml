@@ -205,7 +205,7 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 	end
 	self.bgparams = extrasavedata.moreMMenuCustomization.bgParams
 	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
-	if self.bg.onBeatHook then
+	if self.bg.onBeatHook and self.menuMusicManager then
 		self.menuMusicManager:addOnBeatHook(self.bg.onBeatHook)
 	end
 else
@@ -236,12 +236,26 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 	end
 	self.bgparams = extrasavedata.moreMMenuCustomization.bgParams
 	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
-	if self.bg.onBeatHook then
+	if self.bg.onBeatHook and self.menuMusicManager then
 		self.menuMusicManager:addOnBeatHook(self.bg.onBeatHook)
 	end
 else
 	self.bg = self.bg or em.init('MenuBackground')
 end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/AtomMap.lua"
+pattern = '''
+self.menuMusicManager = em.init("MenuMusicManager")
+'''
+position = "after"
+payload = '''
+	if self.bg.onBeatHook and self.menuMusicManager then
+		self.menuMusicManager:addOnBeatHook(self.bg.onBeatHook)
+	end
 '''
 match_indent = true
 

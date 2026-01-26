@@ -10,7 +10,7 @@ function PublicoBG:initialize(params)
 	self.barX = 0
 	self.barY = 270
 	self.barXScroll = 0
-	self.barDx = -2
+	self.barDx = -1
 	self.barCount = 12
 	self.baseBarHeight = 1
 	self.barHeight = self.baseBarHeight
@@ -41,8 +41,8 @@ end
 function PublicoBG:update(dt)
 	if not cs.rateMod then cs.rateMod = 1 end
 	
-	self.scrollX = (self.scrollX or 0) + self.uvdx * dt * 10
-	self.scrollY = (self.scrollY or 0) + self.uvdy * dt * 10
+	self.scrollX = (self.scrollX or 0) + self.uvdx * dt * 5
+	self.scrollY = (self.scrollY or 0) + self.uvdy * dt * 5
 	
 	self.bars:update(dt)
 end
