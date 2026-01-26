@@ -139,7 +139,7 @@ self.levelData = levelData -- Loads the level data in memory so it can be fed to
 position = "after"
 payload = '''
 if extrasavedata.showTags then
-local tagList = tags.generateTags(self.levelData, true)
+local tagList = tags.generateTags(self.levelData, self.menuItems[self.selection].filename)
 self.tagsDisplay:setTags(tagList)
 end
 '''

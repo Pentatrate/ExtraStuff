@@ -1,0 +1,75 @@
+PublicoBG = class('PublicoBG', Entity)
+
+function PublicoBG:initialize(params)
+	self.x = 0
+	self.y = 0
+	self.uvdx = 0.05
+	self.uvdy = -0.15
+	self.showWall = true
+	self.showBars = true
+	self.barX = 0
+	self.barY = 270
+	self.barXScroll = 0
+	self.barDx = -2
+	self.barCount = 12
+	self.baseBarHeight = 1
+	self.barHeight = self.baseBarHeight
+	self.barColor = 4
+	self.bars = em.init('PublicoBars', {dx = self.barDx, x = self.barX, y = self.barY, xScroll = self.barXScroll, barCount = self.barCount, barHeight = self.barHeight, color = self.barColor})
+	self.bars.skipUpdate = true
+	self.bars.skipRender = true
+	
+	self.spr = love.graphics.newImage("levels/Finished levels/publicocautivo/wallpaper.png")
+	
+	Entity.initialize(self, params)
+end
+
+function PublicoBG.onBeatHook(b)
+	if b % 2 == 0 then
+	else
+		local bars = cs.bg.bars
+		local minimum = -20
+		local maximum = 180
+		bars.barHeight = cs.bg.baseBarHeight
+		for i=1,bars.barCount do
+			bars.bars[i] = math.random(minimum,maximum)
+		end
+		flux.to(bars, 50, {barHeight = 0}):ease("outSine")
+	end
+end
+
+function PublicoBG:update(dt)
+	if not cs.rateMod then cs.rateMod = 1 end
+	
+	self.scrollX = (self.scrollX or 0) + self.uvdx * dt * 10
+	self.scrollY = (self.scrollY or 0) + self.uvdy * dt * 10
+	
+	self.bars:update(dt)
+end
+
+function PublicoBG:draw()
+	color()
+	if self.showWall then
+		local iw, ih = self.spr:getDimensions()
+		local w, h = love.graphics.getDimensions()
+
+		self.scrollX = (self.scrollX or 0) % iw
+		self.scrollY = (self.scrollY or 0) % ih
+
+		for x = -iw, w + iw, iw do
+			for y = -ih, h + ih, ih do
+				love.graphics.draw(
+					self.spr,
+					x - self.scrollX,
+					y - self.scrollY
+				)
+			end
+		end
+	end
+	
+	if self.showBars then
+		self.bars:draw(dt)
+	end
+end
+
+return PublicoBG

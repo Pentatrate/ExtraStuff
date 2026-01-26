@@ -73,7 +73,7 @@ if self.editMenu then
 		extrasavedata.moreMMenuCustomization.enabled = helpers.InputBool("More Customization", (extrasavedata.moreMMenuCustomization.enabled or false))
 		if extrasavedata.moreMMenuCustomization.enabled then
 			--local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "TrumpetGirl", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "DecoAtomMap", "MonitorTheme"}
-			local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
+			local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "PublicoBG", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
 			
 			imguiextra.LabeledSeparator("Background Entity", 1)
 			if imgui.BeginCombo("", extrasavedata.moreMMenuCustomization.backgroundEntity) then
@@ -205,6 +205,9 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 	end
 	self.bgparams = extrasavedata.moreMMenuCustomization.bgParams
 	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
+	if self.bg.onBeatHook then
+		self.menuMusicManager:addOnBeatHook(self.bg.onBeatHook)
+	end
 else
 	self.bg = self.bg or em.init('MenuBackground')
 end
@@ -233,6 +236,9 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 	end
 	self.bgparams = extrasavedata.moreMMenuCustomization.bgParams
 	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
+	if self.bg.onBeatHook then
+		self.menuMusicManager:addOnBeatHook(self.bg.onBeatHook)
+	end
 else
 	self.bg = self.bg or em.init('MenuBackground')
 end
@@ -287,6 +293,18 @@ payload = '''
 shuv.showBadColors = true
 '''
 match_indent = true
+
+#[[patches]]
+#[patches.pattern]
+#target = "states/AtomMap.lua"
+#pattern = '''
+#love.graphics.setCanvas({ oldCanvas, stencil = true })
+#'''
+#position = "before"
+#payload = '''
+#love.graphics.setColor(shuv.pal[0].r/255 or 1,shuv.pal[0].g/255 or 1,shuv.pal[0].b/255 or 1,1)
+#'''
+#match_indent = true
 
 [[patches]]
 [patches.pattern]
