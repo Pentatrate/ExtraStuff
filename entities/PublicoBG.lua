@@ -34,7 +34,7 @@ function PublicoBG.onBeatHook(b)
 		for i=1,bars.barCount do
 			bars.bars[i] = math.random(minimum,maximum)
 		end
-		flux.to(bars, 50, {barHeight = 0}):ease("outSine")
+		flux.to(bars, 50, {barHeight = 0}):ease("outQuad")
 	end
 end
 

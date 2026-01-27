@@ -72,11 +72,34 @@ if self.editMenu then
 	if extrasavedata.moreMMenuCustomization then
 		extrasavedata.moreMMenuCustomization.enabled = helpers.InputBool("More Customization", (extrasavedata.moreMMenuCustomization.enabled or false))
 		if extrasavedata.moreMMenuCustomization.enabled then
+			imguiextra.LabeledSeparator("Logo", 1)
+			local logos = {"Beatblock", "BtRaNaToWnFnaSoCSWtItbE",} --"BeatABlock"}
+			if not extrasavedata.moreMMenuCustomization.logo then extrasavedata.moreMMenuCustomization.logo = "Beatblock" end
+			if imgui.BeginCombo("##LogoCombo", extrasavedata.moreMMenuCustomization.logo) then
+				for i, v in ipairs(logos) do
+					local isSelected = (v == extrasavedata.moreMMenuCustomization.logo)
+					if imgui.Selectable_Bool(v, isSelected) then
+						extrasavedata.moreMMenuCustomization.logo = v
+						if sprites.title[extrasavedata.moreMMenuCustomization.logo] then
+							local i = sprites.title[extrasavedata.moreMMenuCustomization.logo]
+							if extrasavedata.moreMMenuCustomization.coloredLogo and sprites.title[extrasavedata.moreMMenuCustomization.logo .. "_colored"] then
+								i = sprites.title[extrasavedata.moreMMenuCustomization.logo .. "_colored"]
+							end
+							sprites.title.logo = i
+						else
+							extrasavedata.moreMMenuCustomization.logo = "Beatblock"
+						end
+					end
+				end
+				imgui.EndCombo()
+			end
+			extrasavedata.moreMMenuCustomization.coloredLogo = helpers.InputBool("Colored Logo (Shuv still applies)", extrasavedata.moreMMenuCustomization.coloredLogo or false)
+			
 			--local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "TrumpetGirl", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "DecoAtomMap", "MonitorTheme"}
 			local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "PublicoBG", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
 			
 			imguiextra.LabeledSeparator("Background Entity", 1)
-			if imgui.BeginCombo("", extrasavedata.moreMMenuCustomization.backgroundEntity) then
+			if imgui.BeginCombo("##BackgroundEntity", extrasavedata.moreMMenuCustomization.backgroundEntity) then
 				for i, v in ipairs(backgroundEntities) do
 					local isSelected = (v == extrasavedata.moreMMenuCustomization.backgroundEntity)
 					if imgui.Selectable_Bool(v, isSelected) then
@@ -157,6 +180,8 @@ if self.editMenu then
 		love.mouse.setVisible(false)
 	end
 	
+elseif savedata.options.game.customCursorInMenu and (savedata.options.game.cursorMode ~= "default") then
+	love.mouse.setVisible(false)
 end
 '''
 match_indent = true
@@ -207,6 +232,13 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 	self.bg = self.bg or em.init(extrasavedata.moreMMenuCustomization.backgroundEntity,extrasavedata.moreMMenuCustomization.bgParams)
 	if self.bg.onBeatHook and self.menuMusicManager then
 		self.menuMusicManager:addOnBeatHook(self.bg.onBeatHook)
+	end
+	if extrasavedata.moreMMenuCustomization.logo and sprites.title[extrasavedata.moreMMenuCustomization.logo] then
+		local i = sprites.title[extrasavedata.moreMMenuCustomization.logo]
+		if extrasavedata.moreMMenuCustomization.coloredLogo and sprites.title[extrasavedata.moreMMenuCustomization.logo .. "_colored"] then
+			i = sprites.title[extrasavedata.moreMMenuCustomization.logo .. "_colored"]
+		end
+		sprites.title.logo = i
 	end
 else
 	self.bg = self.bg or em.init('MenuBackground')

@@ -19,6 +19,7 @@
 	],
 	"moreMMenuCustomization": {
 		"enabled": false,
+		"logo": "Beatblock",
 		"backgroundEntity": "MenuBackground",
 		"bgParams": {},
 		"radialList": {
