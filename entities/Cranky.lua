@@ -109,7 +109,7 @@ findFiles('costumes/')
 for costumeI, costumePath in ipairs(costumePaths) do
 	local name, path = costumePath.name, costumePath.path
 	
-	print('loading costume '.. name)
+	--print('loading costume '.. name)
 	local data = dpf.loadJson(path..'costume.json')
 	local files = {}
 	if data.files.images then
@@ -129,7 +129,7 @@ end
 
 function Cranky:reloadCustomCostumes()
 	local customCostumeList = {}
-	print('!!!!!!!reloading custom costumes!!!!!!!!')
+	--print('!!!!!!!reloading custom costumes!!!!!!!!')
 	costumePaths = {}
 	if not love.filesystem.getInfo('Custom Costumes','directory') then
 		love.filesystem.createDirectory('Custom Costumes')
@@ -143,7 +143,7 @@ function Cranky:reloadCustomCostumes()
 	for costumeI, costumePath in ipairs(costumePaths) do
 		local name, path = costumePath.name, costumePath.path
 		table.insert(customCostumeList,name)
-		print('loading costume '.. name)
+		--print('loading costume '.. name)
 		local errorDescription = ''
 		local errorPreventLoad = nil
 		local success, data = pcall(function ()

@@ -1,10 +1,10 @@
-imguiHelp = {}
+imguiextra = {}
 
 local function swap(t, a, b)
     t[a], t[b] = t[b], t[a]
 end
 
-function imguiHelp.IntInput(label, value)
+function imguiextra.IntInput(label, value)
 	local buf = ffi.new("int[1]", value or 0)
 	local val = value
 	if imgui.InputInt(label, buf) then
@@ -14,7 +14,7 @@ function imguiHelp.IntInput(label, value)
 	return val
 end
 
-function imguiHelp.DrawReorderableList(imgui, items, list_id, size)
+function imguiextra.DrawReorderableList(imgui, items, list_id, size)
     list_id = list_id or "reorder"
 	local bsize = size or {30, 16}
 
@@ -52,7 +52,7 @@ local function swapRadialOption(list, a, b)
     swap(list.icons[list.submenu], a, b)
 end
 
-function imguiHelp.DrawReorderableRadialList(radialList, list_id, buttonSize)
+function imguiextra.DrawReorderableRadialList(radialList, list_id, buttonSize)
     list_id = list_id or "radialList"
     buttonSize = buttonSize or {120, 24}
 
@@ -151,7 +151,7 @@ local function find_value(tbl, val_to_find)
     return nil
 end
 
-function imguiHelp.Dropdown(label, positions, currentValue)
+function imguiextra.Dropdown(label, positions, currentValue)
     local selectedIndex = find_value(positions, currentValue) or 1
 
     imgui.Text(label)
@@ -178,7 +178,7 @@ function imguiHelp.Dropdown(label, positions, currentValue)
     return positions[selectedIndex]
 end
 
-function imguiHelp.drawValue(label, value, setter, allowedTypes)
+function imguiextra.drawValue(label, value, setter, allowedTypes)
     local t = type(value)
 
     if allowedTypes and not allowedTypes[t] then
@@ -205,7 +205,7 @@ function imguiHelp.drawValue(label, value, setter, allowedTypes)
 
     elseif t == "table" then
         if imgui.TreeNode_Str(label) then
-            imguiHelp.drawTable(value)
+            imguiextra.drawTable(value)
             imgui.TreePop()
         end
 
@@ -214,13 +214,13 @@ function imguiHelp.drawValue(label, value, setter, allowedTypes)
     end
 end
 
-function imguiHelp.drawTable(tbl, types, skipkeys)
+function imguiextra.drawTable(tbl, types, skipkeys)
     for k, v in pairs(tbl) do
 		if skipkeys and skipkeys[k] then
 			goto continue
 		end
 		imgui.PushID_Str(tostring(k))
-		imguiHelp.drawValue(
+		imguiextra.drawValue(
 			tostring(k),
 			v,
 			function(newVal)
@@ -232,7 +232,7 @@ function imguiHelp.drawTable(tbl, types, skipkeys)
     end
 end
 
-function imguiHelp.drawStringList(label, tbl, options)
+function imguiextra.drawStringList(label, tbl, options)
     options = options or {}
     local allowEmpty = options.allowEmpty or false
     local inputWidth = options.inputWidth or 150
@@ -254,12 +254,12 @@ function imguiHelp.drawStringList(label, tbl, options)
         imgui.PopID()
     end
 
-    imguiHelp._stringListBuffers = imguiHelp._stringListBuffers or {}
-    local buf = imguiHelp._stringListBuffers[label]
+    imguiextra._stringListBuffers = imguiextra._stringListBuffers or {}
+    local buf = imguiextra._stringListBuffers[label]
     if not buf then
         buf = ffi.new("char[256]")
         buf[0] = 0
-        imguiHelp._stringListBuffers[label] = buf
+        imguiextra._stringListBuffers[label] = buf
     end
 
     imgui.PushItemWidth(inputWidth)
@@ -278,7 +278,7 @@ function imguiHelp.drawStringList(label, tbl, options)
     end
 end
 
-function imguiHelp.LabeledSeparator(label, size)
+function imguiextra.LabeledSeparator(label, size)
 	local s = size or 1
 	local lineY = imgui.GetCursorPosY()
 	imgui.SetWindowFontScale(s)
@@ -290,4 +290,4 @@ function imguiHelp.LabeledSeparator(label, size)
 	imgui.SetWindowFontScale(1)
 end
 
-return imguiHelp
+return imguiextra
