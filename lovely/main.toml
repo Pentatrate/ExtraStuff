@@ -14,8 +14,8 @@ payload = '''
 if not love.filesystem.getInfo("Mods/ExtraStuff") then
 	error("Check if your ExtraStuff folder is named 'ExtraStuff' not something like 'ExtraStuff-master'")
 end --im not ficing this shite bruh 
-tags = require("Mods.ExtraStuff.tagSystem")
-imguiextra = require("Mods.ExtraStuff.imguiextra")
+tags = require("Mods.ExtraStuff.lib.tagSystem")
+imguiextra = require("Mods.ExtraStuff.lib.imguiextra")
 
 
 testtext = ""
@@ -52,8 +52,8 @@ ez = require "lib.ezanim_rewrite"
 position = "after"
 payload = '''
 jumpscareAnim = ez.newjson(
-	extraStuffFolder .. "/assets/jumpscare.png",
-	extraStuffFolder .. "/assets/jumpscare.json"
+	"Mods/ExtraStuff/assets/jumpscare.png",
+	"Mods/ExtraStuff/assets/jumpscare.json"
 )
 
 jumpscareInst = nil
