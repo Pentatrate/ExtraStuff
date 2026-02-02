@@ -242,6 +242,7 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 	end
 else
 	self.bg = self.bg or em.init('MenuBackground')
+	sprites.title.logo = sprites.title["Beatblock"]
 end
 '''
 match_indent = true
