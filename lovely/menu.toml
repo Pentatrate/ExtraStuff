@@ -484,7 +484,7 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "obj/level/lawrence/LawrenceBG.lua"
+target = "obj/level/shinamon/ShinamonBG.lua"
 pattern = '''
 function ShinamonBG:update(dt)
 '''

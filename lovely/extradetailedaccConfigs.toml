@@ -32,18 +32,6 @@ match_indent = true
 [patches.pattern]
 target = "obj/GameManager.lua"
 pattern = '''
-print("hi cerdef")
-'''
-position = "at"
-payload = '''
---hi tgtm
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/GameManager.lua"
-pattern = '''
 love.graphics.printf("Beat: " .. tostring(math.floor(cs.cBeat * 100) / 100), Tx, 2 + mods["DetailedAcc"].config.TimerYOffset, 200, "left")
 '''
 position = "at"
