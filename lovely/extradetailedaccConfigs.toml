@@ -4,29 +4,6 @@ dump_lua = true
 priority = -1
 
 #detailedacc above/on 2.0.0
-[[patches]]
-[patches.pattern]
-target = "obj/GameManager.lua"
-pattern = '''
-MeterY = 50 
-'''
-position = "at"
-payload = '''
-MeterY = 50 + mods["DetailedAcc"].config.MeterYOffset or 0
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/GameManager.lua"
-pattern = '''
-drawX = 28
-'''
-position = "at"
-payload = '''
-drawX = 3
-'''
-match_indent = true
 
 [[patches]]
 [patches.pattern]
