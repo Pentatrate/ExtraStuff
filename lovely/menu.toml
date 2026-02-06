@@ -113,7 +113,7 @@ if self.editMenu then
 			end
 			if imgui.CollapsingHeader_TreeNodeFlags("Parameters") then
 				if type(self.bgparams or nil) == "table" then
-					imguiHelp.drawTable(self.bgparams, {boolean = true, number = true, string = true}, {skipRender = true, skipUpdate = true, delete = true})
+					imguiextra.drawTable(self.bgparams, {boolean = true, number = true, string = true}, {skipRender = true, skipUpdate = true, delete = true})
 					local function extractValues(tbl, allowedTypes)
 						local result = {}
 						for k, v in pairs(tbl) do
@@ -165,11 +165,7 @@ if self.editMenu then
 		self.menuMusicManager:clearOnBeatHooks()
 		cs.menuMusicManager = self.menuMusicManager
 		cs:init()
-
-		-- return to ingame cursor if the settings say so
-		if savedata.options.game.customCursorInMenu and (savedata.options.game.cursorMode ~= "default") then
-			love.mouse.setVisible(false)
-		end
+		cs.editMenu = true
 	end
 	
 	imgui.End()
@@ -243,6 +239,44 @@ if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization
 else
 	self.bg = self.bg or em.init('MenuBackground')
 	sprites.title.logo = sprites.title["Beatblock"]
+end
+
+if extrasavedata.spashText or false then
+	self.splashtext = loc.get("extrastuffsplashtext_" .. math.random(0,loc.get("extrastuffsplashtext_num")))
+	--self.splashtext = loc.get("extrastuffsplashtext_68")
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+if self.tutorialPopup then
+'''
+position = "before"
+payload = '''
+if self.splashtext then
+	local text = self.splashtext
+	local font = fonts.main
+	
+	local baseWidth = font:getWidth("FUCKJUMPBEATS") --this is just default text width ok
+	local textWidth = font:getWidth(text)
+	
+	local size = self.logoZoom + (baseWidth / textWidth)
+	
+	local x = project.res.cx + 130
+	local y = 80 + sprites.title.logo:getHeight()/2 + self.logoY
+	
+	rtf:drawRich(text,x-1,y,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+	rtf:drawRich(text,x+1,y,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+	rtf:drawRich(text,x,y-1,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+	rtf:drawRich(text,x,y+1,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+	
+	--love.graphics.print(text, x, y, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+	rtf:drawRich(text,x,y,font,size,size,1,500,"center",false,0,0,0,-15,0,0)
+	color(0)
+	love.graphics.setFont(fonts.digitalDisco)
 end
 '''
 match_indent = true

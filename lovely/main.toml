@@ -17,7 +17,7 @@ end --im not ficing this shite bruh
 tags = require("Mods.ExtraStuff.lib.tagSystem")
 imguiextra = require("Mods.ExtraStuff.lib.imguiextra")
 
-
+math.randomseed(os.time())
 testtext = ""
 backspace = false
 backspacetimer = 0
@@ -180,6 +180,7 @@ else
 	backspacetimer = 0
 end
 ]]
+
 '''
 match_indent = true
 

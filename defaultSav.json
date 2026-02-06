@@ -42,7 +42,7 @@
 			"7": {"r":63,"g":38,"b":255}
 		}
 	},
-	
+	"spashText": false,
 	"randomizeMenuOnStart": false,
 	
 	"allowedEases": [
