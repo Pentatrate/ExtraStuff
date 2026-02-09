@@ -218,7 +218,7 @@ match_indent = true
 [patches.pattern]
 target = "states/Menu.lua"
 pattern = '''
-self.mainMenu:addOption('credits',function()
+self.mainMenu:addOption('exitgame',function()
 '''
 position = "before"
 payload = '''
@@ -229,17 +229,11 @@ match_indent = true
 [patches.pattern]
 target = "states/Menu.lua"
 pattern = '''
-end, 17*5, nil, sprites.menu.credits)
+end, 17*6, nil, sprites.menu.quit)
 '''
 position = "after"
 payload = '''
 end
-self.mainMenu:addOption('Mods', function()
-	cs = bs.load('Mods')
-	self.menuMusicManager:clearOnBeatHooks()
-	cs.menuMusicManager = self.menuMusicManager
-	cs:init()
-end, 17 * 7, nil, sprites.menu.mods)
 '''
 match_indent = true
 [[patches]]
@@ -250,8 +244,12 @@ self.mainMenu:setSelection(_G['mainMenuSelection'] or 1)
 '''
 position = "before"
 payload = '''
-for i = 1, #self.mainMenu.options.main do
-	self.mainMenu.options.main[i].y = ((i-3) * 17) - (((#self.mainMenu.options.main/11)-1) * 17)
+local mainoptions = #self.mainMenu.options.main
+if mainoptions > 10 then
+	shift = mainoptions - 10
+end
+for i = 1, mainoptions do
+	self.mainMenu.options.main[i].y = ((i-2-shift) * 17)
 end
 '''
 match_indent = true
