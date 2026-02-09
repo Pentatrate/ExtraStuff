@@ -47,28 +47,32 @@ end
 
 if self.editMenu then
 	self.editMenu = imgui.Begin("Edit Menu", true)
-
-	imguiextra.DrawReorderableRadialList(self.mainMenu, "mainMenu", {imgui.GetContentRegionAvail().x, 24})
-
-	if imgui.Button("Reset") then
-		self.mainMenu:restoreHidden(extraDefaultSave.disabledMainOptions)
-		extrasavedata.disabledMainOptions = extraDefaultSave.disabledMainOptions
-		self.mainMenu:reorderToIds(extraDefaultSave.mainMenuList)
-	end
-
-	imgui.SameLine()
-
-	if imgui.Button("Randomize") then
-		shuffle(extrasavedata.mainMenuList)
-		self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
-	end
-
-	self.mainMenu:saveList(self.mainMenu, "mainMenuList", "disabledMainOptions")
 	
-	imguiextra.LabeledSeparator("More Customization", 1)
+	if not self.oldMenu then
+		imguiextra.DrawReorderableRadialList(self.mainMenu, "mainMenu", {imgui.GetContentRegionAvail().x, 24})
+
+		if imgui.Button("Reset") then
+			self.mainMenu:restoreHidden(extraDefaultSave.disabledMainOptions)
+			extrasavedata.disabledMainOptions = extraDefaultSave.disabledMainOptions
+			self.mainMenu:reorderToIds(extraDefaultSave.mainMenuList)
+		end
+
+		imgui.SameLine()
+
+		if imgui.Button("Randomize") then
+			shuffle(extrasavedata.mainMenuList)
+			self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
+		end
+
+		self.mainMenu:saveList(self.mainMenu, "mainMenuList", "disabledMainOptions")
+	else
+		dpf.saveJson("savedata/extraMod.sav", extrasavedata)
+	end
+	imguiextra.LabeledSeparator("Customization", 1)
 	if not extrasavedata.moreMMenuCustomization then
 		extrasavedata.moreMMenuCustomization = helpers.copytable(extraDefaultSave.moreMMenuCustomization)
 	end
+	extrasavedata.oldMenu = helpers.InputBool("Demo Menu Style (No Reordering (ME LAZY))", extrasavedata.oldMenu or false)
 	if extrasavedata.moreMMenuCustomization then
 		extrasavedata.moreMMenuCustomization.enabled = helpers.InputBool("More Customization", (extrasavedata.moreMMenuCustomization.enabled or false))
 		if extrasavedata.moreMMenuCustomization.enabled then
@@ -96,7 +100,7 @@ if self.editMenu then
 			extrasavedata.moreMMenuCustomization.coloredLogo = helpers.InputBool("Colored Logo (Shuv still applies)", extrasavedata.moreMMenuCustomization.coloredLogo or false)
 			
 			--local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "TrumpetGirl", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "DecoAtomMap", "MonitorTheme"}
-			local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "PublicoBG", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
+			local backgroundEntities = {"MenuBackground", "NoBG", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "PublicoBG", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
 			
 			imguiextra.LabeledSeparator("Background Entity", 1)
 			if imgui.BeginCombo("##BackgroundEntity", extrasavedata.moreMMenuCustomization.backgroundEntity) then
@@ -186,21 +190,121 @@ match_indent = true
 [patches.pattern]
 target = "states/Menu.lua"
 pattern = '''
+self.mainMenu = em.init('RadialList',{allowInput = true, circleWidth = 72})
+'''
+position = "at"
+payload = '''
+self.oldMenu = extrasavedata.oldMenu
+if self.oldMenu then
+	self.mainMenu = em.init('OptionsList',{allowInput = true})
+else
+	self.mainMenu = em.init('RadialList',{allowInput = true, circleWidth = 72})
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+if project.event or (not project.release) then
+'''
+position = "at"
+payload = '''
+if not self.oldMenu and (project.event or (not project.release)) then
+'''
+match_indent = true
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+self.mainMenu:addOption('credits',function()
+'''
+position = "before"
+payload = '''
+if not self.oldMenu then
+'''
+match_indent = true
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+end, 17*5, nil, sprites.menu.credits)
+'''
+position = "after"
+payload = '''
+end
+self.mainMenu:addOption('Mods', function()
+	cs = bs.load('Mods')
+	self.menuMusicManager:clearOnBeatHooks()
+	cs.menuMusicManager = self.menuMusicManager
+	cs:init()
+end, 17 * 7, nil, sprites.menu.mods)
+'''
+match_indent = true
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+self.mainMenu:setSelection(_G['mainMenuSelection'] or 1)
+'''
+position = "before"
+payload = '''
+for i = 1, #self.mainMenu.options.main do
+	self.mainMenu.options.main[i].y = ((i-3) * 17) - (((#self.mainMenu.options.main/11)-1) * 17)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
 		savedata.seenIntroPopups = true
 		sdfunc.save()
 	end'''
 position = "after"
 payload = '''
-self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
-self.mainMenu:addHidden(extrasavedata.disabledMainOptions)
-
-if extrasavedata.randomizeMenuOnStart then
-	for i = #extrasavedata.mainMenuList, 2, -1 do
-		local j = love.math.random(i)
-		extrasavedata.mainMenuList[i], extrasavedata.mainMenuList[j] = extrasavedata.mainMenuList[j], extrasavedata.mainMenuList[i]
-	end
+if not self.oldMenu then
 	self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
+	self.mainMenu:addHidden(extrasavedata.disabledMainOptions)
+
+	if extrasavedata.randomizeMenuOnStart then
+		for i = #extrasavedata.mainMenuList, 2, -1 do
+			local j = love.math.random(i)
+			extrasavedata.mainMenuList[i], extrasavedata.mainMenuList[j] = extrasavedata.mainMenuList[j], extrasavedata.mainMenuList[i]
+		end
+		self.mainMenu:reorderToIds(extrasavedata.mainMenuList)
+	end
 end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+self.mainMenu:draw(self.x * project.res.cx, self.mainMenuY, 500)
+'''
+position = "at"
+payload = '''
+if self.oldMenu then
+	self.mainMenu:draw(self.x * project.res.cx, 200)
+else
+	self.mainMenu:draw(self.x * project.res.cx, self.mainMenuY, 500)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+--self.optionsMenu:addOption('optionsLanguage','language',optionsHeight*1)
+'''
+position = "at"
+payload = '''
+self.optionsMenu:addOption('optionsLanguage','language',optionsHeight*0)
 '''
 match_indent = true
 

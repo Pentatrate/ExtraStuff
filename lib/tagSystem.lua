@@ -1,4 +1,4 @@
-tags = {}
+local tags = {}
 tags.UndoneTags = {"Difficulty"}
 
 tags.vfxevents = {
