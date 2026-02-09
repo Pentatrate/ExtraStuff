@@ -108,7 +108,7 @@ if extrasavedata.movesTowardsMouse then
         local angle = math.atan2(dy, dx)
         local targetX = mouse.rx + math.cos(angle) * extrasavedata.moveToRadiusCranky
         local targetY = mouse.ry + math.sin(angle) * extrasavedata.moveToRadiusCranky
-        flux.to(self, 5, {x = targetX, y = targetY}):ease("inOutQuad")
+        flux.to(self, extrasavedata.crankySpeedToMouse or 5, {x = targetX, y = targetY}):ease("inOutQuad")
     end
 end
 '''

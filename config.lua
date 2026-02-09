@@ -149,6 +149,7 @@ if config then
 	
 	config.movesTowardsMouse = helpers.InputBool("Cranky Moves Towards the Mouse", (config.movesTowardsMouse or false))
 	config.moveToRadiusCranky = helpers.InputFloat("Distance Cranky Stops", (config.moveToRadiusCranky or 25))
+	config.crankySpeedToMouse = helpers.InputFloat("Cranky Time to Reach Mouse", (config.moveToRadiusCranky or 5))
 	
 	imguiextra.LabeledSeparator("-  Foxy Jumpscare", 1)
 	

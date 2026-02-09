@@ -44,6 +44,7 @@
 	},
 	"spashText": false,
 	"randomizeMenuOnStart": false,
+	"oldMenu": false,
 	
 	"allowedEases": [
 	],
@@ -70,6 +71,7 @@
 	
 	"movesTowardsMouse": false,
 	"moveToRadiusCranky": 25,
+	"crankySpeedToMouse": 5,
 	
 	"foxyJumpscare": false,
 	"coydressReplaceFoxy": false,

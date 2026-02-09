@@ -246,3 +246,17 @@ if extrasavedata.robloxAds then
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+self.initFunc = initFunc
+'''
+position = "after"
+payload = '''
+if not self.rateMod then
+	self.rateMod = 1
+end
+'''
+match_indent = true

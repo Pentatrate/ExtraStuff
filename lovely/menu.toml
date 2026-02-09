@@ -493,22 +493,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "obj/level/damoclism/DamoclismBG.lua"
-pattern = '''
-	self.i = self.i + dt*self.spinSpeed*cs.rateMod
-	self.crystalSpin = self.crystalSpin + self.crystalSpinSpeed*dt*cs.rateMod
-	self.swordRingSpin = self.swordRingSpin + self.swordRingSpinSpeed*dt*cs.rateMod
-'''
-position = "at"
-payload = '''
-	self.i = self.i + dt*self.spinSpeed*(cs.rateMod or 1)
-	self.crystalSpin = self.crystalSpin + self.crystalSpinSpeed*dt*(cs.rateMod or 1)
-	self.swordRingSpin = self.swordRingSpin + self.swordRingSpinSpeed*dt*(cs.rateMod or 1)
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = "obj/level/BEATROCK/HoleBackground.lua"
 pattern = '''
 	self.spawnTimer = self.spawnTimer - (cs.cBeat - self.lastbeat)
@@ -525,91 +509,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "obj/level/tutorial/TutorialBG.lua"
-pattern = '''
-dt = dt*cs.rateMod
-'''
-position = "before"
-payload = '''
-if not cs.rateMod then
-	cs.rateMod = 1
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/orchids/Plasma.lua"
-pattern = '''
-dt = dt*cs.rateMod
-'''
-position = "before"
-payload = '''
-if not cs.rateMod then
-	cs.rateMod = 1
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/orchids/SineWaves.lua"
-pattern = '''
-dt = dt*cs.rateMod
-'''
-position = "before"
-payload = '''
-if not cs.rateMod then
-	cs.rateMod = 1
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/rain/Rain.lua"
-pattern = '''
-dt = dt*cs.rateMod
-'''
-position = "before"
-payload = '''
-if not cs.rateMod then
-	cs.rateMod = 1
-	cs.noratemod = true
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/rain/Rain.lua"
-pattern = '''
-function Rain:draw()
-'''
-position = "after"
-payload = '''
-if cs.noratemod then
-	self:drawBG()
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/lawrence/LawrenceBG.lua"
-pattern = '''
-prof.push("LawrenceBG update")
-'''
-position = "after"
-payload = '''
-if not cs.rateMod then
-	cs.rateMod = 1
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = "obj/level/lawrence/LawrenceBG.lua"
 pattern = '''
 self.cumulativeAngle = self.cumulativeAngle + cs.p.angleDelta
@@ -617,19 +516,5 @@ self.cumulativeAngle = self.cumulativeAngle + cs.p.angleDelta
 position = "at"
 payload = '''
 self.cumulativeAngle = self.cumulativeAngle + (cs.p and cs.p.angleDelta or 0)
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/shinamon/ShinamonBG.lua"
-pattern = '''
-function ShinamonBG:update(dt)
-'''
-position = "after"
-payload = '''
-if not cs.rateMod then
-	cs.rateMod = 1
-end
 '''
 match_indent = true

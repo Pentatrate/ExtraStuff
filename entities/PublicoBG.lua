@@ -39,7 +39,6 @@ function PublicoBG.onBeatHook(b)
 end
 
 function PublicoBG:update(dt)
-	if not cs.rateMod then cs.rateMod = 1 end
 	
 	self.scrollX = (self.scrollX or 0) + self.uvdx * dt * 5
 	self.scrollY = (self.scrollY or 0) + self.uvdy * dt * 5
