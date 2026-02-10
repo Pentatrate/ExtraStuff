@@ -48,6 +48,20 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
+target = "obj/notes/Block.lua"
+pattern = '''
+self.endTap = false
+'''
+position = "after"
+payload = '''
+if extrasavedata.allTap then
+	self.endTap = true
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
 target = "obj/TitleParticle.lua"
 pattern = '''
 if self.y >= 300 then self.delete = true end -- i do not trust my deleting code at all
@@ -57,4 +71,3 @@ payload = '''
 if self.y >= 370 then self.delete = true end
 '''
 match_indent = true
-
