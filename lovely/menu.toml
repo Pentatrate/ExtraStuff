@@ -345,7 +345,7 @@ end
 
 if extrasavedata.spashText or false then
 	self.splashtext = loc.get("extrastuffsplashtext_" .. math.random(0,loc.get("extrastuffsplashtext_num")))
-	--self.splashtext = loc.get("extrastuffsplashtext_68")
+	--self.splashtext = loc.get("extrastuffsplashtext_95")
 end
 '''
 match_indent = true
@@ -369,14 +369,24 @@ if self.splashtext then
 	
 	local x = project.res.cx + 130
 	local y = 80 + sprites.title.logo:getHeight()/2 + self.logoY
-	
-	rtf:drawRich(text,x-1,y,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
-	rtf:drawRich(text,x+1,y,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
-	rtf:drawRich(text,x,y-1,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
-	rtf:drawRich(text,x,y+1,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
-	
-	--love.graphics.print(text, x, y, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
-	rtf:drawRich(text,x,y,font,size,size,1,500,"center",false,0,0,0,-15,0,0)
+	if self.splashtext == loc.get("extrastuffsplashtext_95") then
+		color(0)
+		love.graphics.setFont(font)
+		love.graphics.print(text, x+1, y, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+		love.graphics.print(text, x-1, y, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+		love.graphics.print(text, x, y+1, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+		love.graphics.print(text, x, y-1, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+		color(1)
+		love.graphics.print(text, x, y, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+	else
+		rtf:drawRich(text,x-1,y,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+		rtf:drawRich(text,x+1,y,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+		rtf:drawRich(text,x,y-1,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+		rtf:drawRich(text,x,y+1,font,size,size,0,500,"center",false,0,0,0,-15,0,0)
+		
+		--love.graphics.print(text, x, y, math.rad(-15), size, size, textWidth/2, font:getHeight()/2)
+		rtf:drawRich(text,x,y,font,size,size,1,500,"center",false,0,0,0,-15,0,0)
+	end
 	color(0)
 	love.graphics.setFont(fonts.digitalDisco)
 end
