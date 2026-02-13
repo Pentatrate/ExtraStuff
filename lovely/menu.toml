@@ -77,7 +77,7 @@ if self.editMenu then
 		extrasavedata.moreMMenuCustomization.enabled = helpers.InputBool("More Customization", (extrasavedata.moreMMenuCustomization.enabled or false))
 		if extrasavedata.moreMMenuCustomization.enabled then
 			imguiextra.LabeledSeparator("Logo", 1)
-			local logos = {"Beatblock", "BtRaNaToWnFnaSoCSWtItbE", "BeatblockShort"} --"BeatABlock"}
+			local logos = {"Beatblock", "BtRaNaToWnFnaSoCSWtItbE", "BeatblockShort", "PentasBeattools",} --"BeatABlock"}
 			if not extrasavedata.moreMMenuCustomization.logo then extrasavedata.moreMMenuCustomization.logo = "Beatblock" end
 			if imgui.BeginCombo("##LogoCombo", extrasavedata.moreMMenuCustomization.logo) then
 				for i, v in ipairs(logos) do
@@ -113,6 +113,8 @@ if self.editMenu then
 				extrasavedata.moreMMenuCustomization.radialList.iconDistance = helpers.InputFloat("iconDistance", extrasavedata.moreMMenuCustomization.radialList.iconDistance or 0.261)
 				extrasavedata.moreMMenuCustomization.radialList.x = helpers.InputFloat("x", extrasavedata.moreMMenuCustomization.radialList.x or 200)
 				extrasavedata.moreMMenuCustomization.radialList.y = helpers.InputFloat("y", extrasavedata.moreMMenuCustomization.radialList.y or 750)
+				extrasavedata.moreMMenuCustomization.radialList.static = helpers.InputBool("static", extrasavedata.moreMMenuCustomization.radialList.static or false)
+				extrasavedata.moreMMenuCustomization.radialList.hideLabels = helpers.InputBool("hideLabels", extrasavedata.moreMMenuCustomization.radialList.hideLabels or false)
 				if imgui.Button("Reset Params") then --helpers.InputFloat(k, v)
 					extrasavedata.moreMMenuCustomization.radialList = helpers.copy(extraDefaultSave.moreMMenuCustomization.radialList)
 				end
