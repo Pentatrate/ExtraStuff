@@ -20,6 +20,7 @@
 	"moreMMenuCustomization": {
 		"enabled": false,
 		"logo": "Beatblock",
+		"logoPosOff": [0,0],
 		"backgroundEntity": "MenuBackground",
 		"bgParams": {},
 		"radialList": {
@@ -42,7 +43,8 @@
 			"7": {"r":63,"g":38,"b":255}
 		}
 	},
-	"spashText": false,
+	"splashText": false,
+	"spashTextLeft": false,
 	"randomizeMenuOnStart": false,
 	"oldMenu": false,
 	
