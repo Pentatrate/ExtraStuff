@@ -77,7 +77,7 @@ if self.editMenu then
 		extrasavedata.moreMMenuCustomization.enabled = helpers.InputBool("More Customization", (extrasavedata.moreMMenuCustomization.enabled or false))
 		if extrasavedata.moreMMenuCustomization.enabled then
 			imguiextra.LabeledSeparator("Logo", 1)
-			local logos = {"Beatblock", "BtRaNaToWnFnaSoCSWtItbE", "BeatblockShort", "PentasBeattools",} --"BeatABlock"}
+			local logos = {"Beatblock", "BeatblockShort", "BtRaNaToWnFnaSoCSWtItbE", "PentasBeattools",} --"BeatABlock"}
 			if not extrasavedata.moreMMenuCustomization.logo then extrasavedata.moreMMenuCustomization.logo = "Beatblock" end
 			if imgui.BeginCombo("##LogoCombo", extrasavedata.moreMMenuCustomization.logo) then
 				for i, v in ipairs(logos) do
@@ -110,6 +110,7 @@ if self.editMenu then
 				extrasavedata.moreMMenuCustomization.radialList.angleOffset = math.rad(helpers.InputFloat("angleOffset", math.deg(extrasavedata.moreMMenuCustomization.radialList.angleOffset) or 0))
 				extrasavedata.moreMMenuCustomization.radialList.activeArc = helpers.InputFloat("activeArc", extrasavedata.moreMMenuCustomization.radialList.activeArc or 1.57)
 				extrasavedata.moreMMenuCustomization.radialList.radius = helpers.InputFloat("radius", extrasavedata.moreMMenuCustomization.radialList.radius or 500)
+				extrasavedata.moreMMenuCustomization.radialList.bounceStrength = helpers.InputFloat("bounceStrength", extrasavedata.moreMMenuCustomization.radialList.bounceStrength or 1)
 				extrasavedata.moreMMenuCustomization.radialList.iconDistance = helpers.InputFloat("iconDistance", extrasavedata.moreMMenuCustomization.radialList.iconDistance or 0.261)
 				extrasavedata.moreMMenuCustomization.radialList.x = helpers.InputFloat("x", extrasavedata.moreMMenuCustomization.radialList.x or 200)
 				extrasavedata.moreMMenuCustomization.radialList.y = helpers.InputFloat("y", extrasavedata.moreMMenuCustomization.radialList.y or 750)

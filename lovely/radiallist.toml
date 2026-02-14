@@ -19,6 +19,20 @@ self.static = false
 self.hideLabels = false
 self.animAngle   = 0
 self.targetAngle = 0
+
+self.bounceStrength = 1
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/RadialList.lua"
+pattern = '''
+self.bounce = 15
+'''
+position = "at"
+payload = '''
+self.bounce = 15 * self.bounceStrength
 '''
 match_indent = true
 
@@ -112,7 +126,8 @@ if self.static then
 		if diff > math.pi then
 			diff = diff - math.pi * 2
 		end
-
+		self.bounce = 15 * self.bounceStrength
+		self.ease = flux.to(self,30,{bounce = 0}):ease("outExpo")
 		flux.to(self, 30, {
 			animAngle = self.animAngle + diff
 		}):ease("outExpo"):oncomplete(function()
