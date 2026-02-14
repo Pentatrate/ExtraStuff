@@ -48,7 +48,7 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "obj/notes/Block.lua"
+target = "obj/notes/Hold.lua"
 pattern = '''
 self.endTap = false
 '''
