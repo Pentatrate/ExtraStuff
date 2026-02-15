@@ -195,7 +195,7 @@ if extrasavedata.chartinfoplus and extrasavedata.chartinfoplus.enabled then
 		end
 	else
 		if extrasavedata.chartinfoplus.levelLength then
-			str = str .. " Len: ??:??"
+			str = str .. " Len: ?:??"
 		end
 		if extrasavedata.chartinfoplus.fullCombo then
 			str = str .. " FC: ???"
