@@ -34,29 +34,63 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "obj/notes/Block.lua"
+target = "levelformat/events/Notes/bounce.lua"
 pattern = '''
-self.tap = self.tap or false
+tap = event.tap,
 '''
-position = "after"
+position = "at"
 payload = '''
-if extrasavedata.allTap then
-	self.tap = true
-end
+tap = event.tap or extrasavedata.allTap,
 '''
 match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "obj/notes/Hold.lua"
+target = "levelformat/events/Notes/block.lua"
 pattern = '''
-self.endTap = false
+tap = event.tap,
 '''
-position = "after"
+position = "at"
 payload = '''
-if extrasavedata.allTap then
-	self.endTap = true
-end
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/inverse.lua"
+pattern = '''
+tap = event.tap,
+'''
+position = "at"
+payload = '''
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/side.lua"
+pattern = '''
+tap = event.tap,
+'''
+position = "at"
+payload = '''
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/hold.lua"
+pattern = '''
+tap = event.startTap,
+endTap = event.endTap,
+'''
+position = "at"
+payload = '''
+tap = event.startTap or extrasavedata.allTap,
+endTap = event.endTap or extrasavedata.allTap,
 '''
 match_indent = true
 

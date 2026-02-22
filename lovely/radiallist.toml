@@ -557,18 +557,6 @@ match_indent = true
 [patches.pattern]
 target = "obj/RadialList.lua"
 pattern = '''
-local icon = self.icons[self.submenu][i]
-'''
-position = "at"
-payload = '''
-local icon = self.icons[self.submenu][i] or sprites.menu.fallback
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/RadialList.lua"
-pattern = '''
 love.graphics.rectangle("fill",textX-2,textY-2,v.width+4,fonts.digitalDisco:getHeight()+2,4)
 color(self.selection == i and 0 or 1)
 love.graphics.print(v.text,textX,textY)

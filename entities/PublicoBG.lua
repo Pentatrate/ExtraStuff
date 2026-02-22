@@ -15,13 +15,13 @@ function PublicoBG:initialize(params)
 	self.baseBarHeight = 1
 	self.barHeight = self.baseBarHeight
 	self.barColor = 4
-	self.bars = em.init('PublicoBars', {dx = self.barDx, x = self.barX, y = self.barY, xScroll = self.barXScroll, barCount = self.barCount, barHeight = self.barHeight, color = self.barColor})
-	self.bars.skipUpdate = true
-	self.bars.skipRender = true
 	
 	self.spr = love.graphics.newImage("levels/Finished levels/publicocautivo/wallpaper.png")
 	
 	Entity.initialize(self, params)
+	self.bars = em.init('PublicoBars', {dx = self.barDx, x = self.barX, y = self.barY, xScroll = self.barXScroll, barCount = self.barCount, barHeight = self.barHeight, color = self.barColor})
+	self.bars.skipUpdate = true
+	self.bars.skipRender = true
 end
 
 function PublicoBG.onBeatHook(b)
