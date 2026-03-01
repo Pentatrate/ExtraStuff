@@ -50,6 +50,7 @@
 	
 	"allowedEases": [
 	],
+	"playingCrank": false,
 	
 	"showTags": false,
 	

@@ -54,8 +54,9 @@ if config then
 		config.coydressReplaceFoxy = helpers.InputBool("Coydress Instead of Foxy", (config.coydressReplaceFoxy or false))
 		config.alwaysLoadWorkshop = helpers.InputBool("Always load workshop", (config.alwaysLoadWorkshop or true))
 		config.showTags = helpers.InputBool("Show Generated Tags for Levels", (config.showTags or false))
+		config.playingCrank = helpers.InputBool("BotCranky Plays", (config.playingCrank or false))
 		
-		imgui.Text("Chimaera Fight - not done\nCoydress Instead of Foxy - does nothing\nAlways Load Workshop - not sure if possible\nShow Gen. Tags - works but I don't know \nhow to implement it yet")
+		imgui.Text("Chimaera Fight - not done?\nCoydress Instead of Foxy - does nothing\nAlways Load Workshop - not sure if possible\nShow Gen. Tags - works but I don't know \nhow to implement it yet\nBotCraanky Plays - real time cranking (no mines)")
 	end
 	
 	imguiextra.LabeledSeparator("Main Menu", 1)

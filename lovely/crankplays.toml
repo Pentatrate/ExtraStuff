@@ -1,0 +1,216 @@
+[manifest]
+version = "1.4"
+dump_lua = true
+priority = 1
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''prof.push("player update")'''
+position = "after"
+payload = '''
+if (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") then
+
+local closestNotes = {}
+local smallestDiff = math.huge
+
+local function considerNote(angle, beatPos)
+    local diff = math.abs(beatPos - cs.cBeat)
+    if diff < smallestDiff then
+        smallestDiff = diff
+        closestNotes = { angle }
+    elseif diff == smallestDiff then
+        table.insert(closestNotes, angle)
+    end
+end
+
+for _, v in ipairs(entities) do
+    if v.hb then
+        if v.name == "block" and not v.hitYet then
+            considerNote(v.angle, v.hb)
+        elseif v.name == "hold" and v.duration and (not v.hitYet or v.started) then
+            local holdEnd = v.hb + v.duration
+            local stepSize = math.max((v.leniencyFrames + cs.extraHoldLeniency) / 60, 0.001)
+            local startAngle = v.startAngle or v.angle
+            local beat = v.hb
+            while beat < holdEnd do
+                local t = (beat - v.hb) / v.duration
+                considerNote(helpers.interpolate(startAngle, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat)
+                beat = beat + stepSize
+            end
+            considerNote(v.angle2 + (v.tesAngle or 0), holdEnd)
+        elseif v.name == "bounce" and not v.hitYet then
+            considerNote(v.endAngle, v.hb)
+        elseif v.name == "side" and not v.sideHitYet and v:inTimingWindow(v.sideTimingWindow) then
+            considerNote(v.angle, v.hb)
+        end
+    end
+end
+
+-- For each note angle, find the best paddle and collect the needed player angles
+local targetAngle = nil
+if #closestNotes > 0 then
+    local sumX, sumY = 0, 0
+    for _, noteAngle in ipairs(closestNotes) do
+        -- For this note, find which paddle needs the least movement
+        local bestDiff = math.huge
+        local bestNeeded = nil
+        for _, p in ipairs(cs.p.paddles) do
+            if p.enabled then
+                local neededAngle = noteAngle + cs.objectRotation + p.baseAngle
+                local diff = ((neededAngle - self.angle + 180) % 360) - 180
+                if math.abs(diff) < math.abs(bestDiff) then
+                    bestDiff = diff
+                    bestNeeded = self.angle + diff
+                end
+            end
+        end
+        if bestNeeded then
+            local rad = math.rad(bestNeeded)
+            sumX = sumX + math.cos(rad)
+            sumY = sumY + math.sin(rad)
+        end
+    end
+    targetAngle = math.deg(math.atan2(sumY, sumX))
+end
+
+if targetAngle then
+    local beatms = GameManager:beatToMs(1)
+    if smallestDiff ~= math.huge then
+        beatms = GameManager:beatToMs(smallestDiff)
+    end
+    local duration = beatms / 10
+
+    -- Always use shortest-path delta from current angle
+    local diff = ((targetAngle - self.angle + 180) % 360) - 180
+    local finalAngle = self.angle + diff
+
+    local targetSide = nil
+    for _, v in ipairs(entities) do
+        if v.hb and v.name == "side" and not v.sideHitYet and v:inTimingWindow(v.sideTimingWindow) then
+            targetSide = v
+            break
+        end
+    end
+
+    if self.angleTween then self.angleTween:stop() end
+
+    if targetSide then
+        if math.abs(diff) < 1 then
+            self.angleTween = flux.to(self, duration / 2, {angle = self.angle + 30})
+                :oncomplete(function()
+                    self.angleTween = flux.to(self, duration / 2, {angle = self.angle - 30}):ease("outQuad")
+                end)
+        else
+            local wiggle = diff > 0 and 30 or -30
+            self.angleTween = flux.to(self, duration, {angle = finalAngle + wiggle}):ease("outQuad")
+        end
+    else
+        self.angleTween = flux.to(self, duration, {angle = finalAngle}):ease("outQuad")
+    end
+end
+else
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''self.angleDelta = helpers.angdelta(self.anglePrevFrame,(self.angle+360)%360)'''
+position = "before"
+payload = '''
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''if savedata.options.accessibility.taps == 'auto' then'''
+position = "before"
+payload = '''
+if (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") then
+	if cs.cBeat >= t.beat then
+		hitTap = true
+		t.hit = true
+		self:addToScore(t.score)
+		table.insert(cs.tapTiming,0)
+	end
+else
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/GameManager.lua"
+pattern = '''return hitTap'''
+position = "before"
+payload = '''
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''savedata.costumes.currentCostume == "jolly" or'''
+position = "before"
+payload = '''
+extrasavedata.playingCrank or
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''if savedata.options.accessibility.taps ~= 'default' then'''
+position = "before"
+payload = '''
+if extrasavedata.playingCrank then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffCrankPlays')
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''sdfunc.save()'''
+position = "at"
+payload = '''
+if not extrasavedata.playingCrank then
+	sdfunc.save()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''self.playedLevelsJson[saveName] = {'''
+position = "before"
+payload = '''
+if not extrasavedata.playingCrank then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''self.zoomIn = 1'''
+position = "before"
+payload = '''
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''if self.goToHidden and not project.event then'''
+position = "at"
+payload = '''
+if self.goToHidden and not project.event and not extrasavedata.playingCrank then
+'''
+match_indent = true
