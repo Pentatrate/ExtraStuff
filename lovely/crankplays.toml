@@ -9,18 +9,45 @@ target = "obj/Player.lua"
 pattern = '''prof.push("player update")'''
 position = "after"
 payload = '''
-if (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") then
+if (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") and maininput:pressed("tap1") then
+	if self.angleTween then self.angleTween:stop() end
+elseif (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") and not maininput:down("tap1") then
+local function middleAngle(a, b)
+    local diff = ((b - a + 180) % 360 + 360) % 360 - 180
+    return ((a + diff / 2) % 360 + 360) % 360
+end
+--[[local function averageAnglesDeg(angles)
+    local sinSum, cosSum = 0, 0
+    for _, angle in ipairs(angles) do
+        local rad = math.rad(angle)
+        sinSum = sinSum + math.sin(rad)
+        cosSum = cosSum + math.cos(rad)
+    end
+    return math.deg(math.atan2(sinSum, cosSum))
+end]]
 
+--local closestMines = {}
 local closestNotes = {}
-local smallestDiff = math.huge
-
+--local smallestMineDiff = math.huge
+local smallestNoteDiff = math.huge
+--[[
+local function considerMine(angle, beatPos)
+    local diff = math.abs(beatPos - cs.cBeat)
+    if diff < smallestMineDiff then
+        smallestMineDiff = diff
+        closestMines = { { angle = angle, beat = beatPos, dist = diff } }
+    elseif diff == smallestMineDiff then
+        table.insert(closestMines, { angle = angle, beat = beatPos, dist = diff  })
+    end
+end
+]]
 local function considerNote(angle, beatPos)
     local diff = math.abs(beatPos - cs.cBeat)
-    if diff < smallestDiff then
-        smallestDiff = diff
-        closestNotes = { angle }
-    elseif diff == smallestDiff then
-        table.insert(closestNotes, angle)
+    if diff < smallestNoteDiff then
+        smallestNoteDiff = diff
+        closestNotes = { { angle = angle, beat = beatPos, dist = diff } }
+    elseif diff == smallestNoteDiff then
+        table.insert(closestNotes, { angle = angle, beat = beatPos, dist = diff  })
     end
 end
 
@@ -29,59 +56,204 @@ for _, v in ipairs(entities) do
         if v.name == "block" and not v.hitYet then
             considerNote(v.angle, v.hb)
         elseif v.name == "hold" and v.duration and (not v.hitYet or v.started) then
-            local holdEnd = v.hb + v.duration
-            local stepSize = math.max((v.leniencyFrames + cs.extraHoldLeniency) / 60, 0.001)
-            local startAngle = v.startAngle or v.angle
-            local beat = v.hb
-            while beat < holdEnd do
-                local t = (beat - v.hb) / v.duration
-                considerNote(helpers.interpolate(startAngle, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat)
-                beat = beat + stepSize
+            if v.duration == 0 then
+                local normAng1 = (v.startAngle or v.angle) % 360
+                local normAng2 = (v.angle2 + (v.tesAngle or 0)) % 360
+                local mid = middleAngle(normAng1, normAng2)
+                considerNote(mid, v.hb)
+            else
+                local holdEnd = v.hb + v.duration
+                local stepSize = math.max((v.leniencyFrames + cs.extraHoldLeniency) / 60, 0.001)
+                local startAngle = v.startAngle or v.angle
+                local beat = v.hb
+                while beat < holdEnd do
+                    local t = (beat - v.hb) / v.duration
+                    considerNote(helpers.interpolate(startAngle, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat)
+                    beat = beat + stepSize
+                end
+                considerNote(v.angle2 + (v.tesAngle or 0), holdEnd)
             end
-            considerNote(v.angle2 + (v.tesAngle or 0), holdEnd)
         elseif v.name == "bounce" and not v.hitYet then
             considerNote(v.endAngle, v.hb)
         elseif v.name == "side" and not v.sideHitYet and v:inTimingWindow(v.sideTimingWindow) then
             considerNote(v.angle, v.hb)
+		 --[[
+        elseif v.name == "mine" and not v.hitYet then
+            considerMine(v.angle, v.hb)
+        elseif v.name == "mineHold" and v.duration and (not v.hitYet or v.started) then
+			if v.duration == 0 then
+				local startAng = v.startAngle or v.angle
+				local endAng = v.angle2 + (v.tesAngle or 0)
+				local angdiff = math.abs(startAng - endAng)
+				local normAng1 = startAng % 360
+				local normAng2 = endAng % 360
+				local mid = middleAngle(normAng1, normAng2)
+				if angdiff > 180 then
+					considerMine((mid + 180) % 360, v.hb)
+				elseif angdiff == 180 then
+					if endAng > startAng then
+						considerMine((mid + 180) % 360, v.hb)
+					else
+						considerMine(mid, v.hb)
+					end
+				else
+					considerMine(mid, v.hb)
+				end
+			else
+				local holdEnd = v.hb + v.duration
+                local stepSize = math.max((v.leniencyFrames + cs.extraHoldLeniency) / 60, 0.001)
+                local startAng = v.startAngle or v.angle
+                local beat = v.hb
+                while beat < holdEnd do
+                    local t = (beat - v.hb) / v.duration
+                    considerMine(helpers.interpolate(startAng, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat)
+                    beat = beat + stepSize
+                end
+                considerMine(startAng, v.hb)
+                considerMine(v.angle2 + (v.tesAngle or 0), holdEnd)
+			end]]
         end
     end
 end
 
--- For each note angle, find the best paddle and collect the needed player angles
+local seen = {}
+local uniqueNotes = {}
+for _, note in ipairs(closestNotes) do
+    local key = math.floor(((note.angle % 360) + 360) % 360 * 1000 + 0.5)
+    if not seen[key] then
+        seen[key] = true
+        table.insert(uniqueNotes, note)
+    end
+end
+closestNotes = uniqueNotes
+
+local enabledPaddles = {}
+for _, p in ipairs(cs.p.paddles) do
+    if p.enabled then
+        table.insert(enabledPaddles, p)
+    end
+end
+--[[
+local forbiddenAngles = {}
+for _, m in ipairs(closestMines) do
+	table.insert(forbiddenAngles, m.angle % 360)
+end
+
+local function touchingForbiddenAngs(angle)
+	for _, p in ipairs(enabledPaddles) do
+		local hi = angle + p.baseAngle + p.paddleSize / 2
+		local lo = angle + p.baseAngle - p.paddleSize / 2
+		for _, a in ipairs(forbiddenAngles) do
+			if a < hi and a > lo then
+				return true
+			end
+		end
+	end
+	return false
+end
+]]
+local function scoreAngle(candidateAngle)
+    local total = 0
+    for _, note in ipairs(closestNotes) do
+        local best = math.huge
+        for _, p in ipairs(enabledPaddles) do
+            local needed = note.angle + cs.objectRotation + p.baseAngle
+            local err = math.abs(((needed - candidateAngle + 180) % 360) - 180)
+            if err < best then best = err end
+        end
+        total = total + best
+    end
+    --[[if touchingForbiddenAngs(candidateAngle) then
+        total = total + 10000
+    end]]
+    return total
+end
+
 local targetAngle = nil
-if #closestNotes > 0 then
-    local sumX, sumY = 0, 0
-    for _, noteAngle in ipairs(closestNotes) do
-        -- For this note, find which paddle needs the least movement
-        local bestDiff = math.huge
-        local bestNeeded = nil
-        for _, p in ipairs(cs.p.paddles) do
-            if p.enabled then
-                local neededAngle = noteAngle + cs.objectRotation + p.baseAngle
-                local diff = ((neededAngle - self.angle + 180) % 360) - 180
-                if math.abs(diff) < math.abs(bestDiff) then
-                    bestDiff = diff
-                    bestNeeded = self.angle + diff
+
+if #closestNotes > 0 and #enabledPaddles > 0 then --and smallestNoteDiff <= smallestMineDiff then
+    local candidates = {}
+
+    for _, note in ipairs(closestNotes) do
+        for _, p in ipairs(enabledPaddles) do
+            local needed = note.angle + cs.objectRotation + p.baseAngle
+            table.insert(candidates, needed % 360)
+            local halfWidth = (p.paddleSize or 35) / 2
+            for offset = -halfWidth + 1, halfWidth - 1, 1 do
+                table.insert(candidates, (needed + offset) % 360)
+            end
+        end
+    end
+
+    if #closestNotes > 1 then
+        for i = 1, #closestNotes do
+            for j = i + 1, #closestNotes do
+                for _, p in ipairs(enabledPaddles) do
+                    local ang1 = closestNotes[i].angle + cs.objectRotation + p.baseAngle
+                    local ang2 = closestNotes[j].angle + cs.objectRotation + p.baseAngle
+                    local mid = middleAngle(ang1, ang2)
+                    table.insert(candidates, mid)
+                    local halfWidth = (p.paddleSize or 35) / 2
+                    for offset = -halfWidth + 1, halfWidth - 1, 1 do
+                        table.insert(candidates, (mid + offset) % 360)
+                    end
                 end
             end
         end
-        if bestNeeded then
-            local rad = math.rad(bestNeeded)
-            sumX = sumX + math.cos(rad)
-            sumY = sumY + math.sin(rad)
+    end
+
+    local tiebreakAngle = 0
+    if #closestNotes > 0 then
+        local first = (closestNotes[1].angle + cs.objectRotation) % 360
+        tiebreakAngle = first
+        for i = 2, #closestNotes do
+            local a = (closestNotes[i].angle + cs.objectRotation) % 360
+            tiebreakAngle = middleAngle(tiebreakAngle, a)
         end
     end
-    targetAngle = math.deg(math.atan2(sumY, sumX))
+
+    local bestScore = math.huge
+    local bestAngle = self.angle
+
+    for _, candidate in ipairs(candidates) do
+        local paddleHalf = 0
+        for _, p in ipairs(enabledPaddles) do
+            paddleHalf = math.max(paddleHalf, (p.paddleSize or 35) / 2)
+        end
+		local score = scoreAngle(candidate)
+		if score < bestScore or (score <= bestScore + 0.01 and
+			math.abs(((candidate - tiebreakAngle + 180) % 360) - 180) <
+			math.abs(((bestAngle - tiebreakAngle + 180) % 360) - 180)) then
+			bestScore = score
+			bestAngle = candidate
+		end
+    end
+
+    if bestScore == math.huge then
+        for _, candidate in ipairs(candidates) do
+            local score = scoreAngle(candidate)
+            if score < bestScore or (score <= bestScore + 0.01 and
+                math.abs(((candidate - tiebreakAngle + 180) % 360) - 180) <
+                math.abs(((bestAngle - tiebreakAngle + 180) % 360) - 180)) then
+                bestScore = score
+                bestAngle = candidate
+            end
+        end
+    end
+
+    targetAngle = bestAngle
+--[[elseif #closestMines > 0 then
+	targetAngle = (averageAnglesDeg(forbiddenAngles) + 180) % 360
+	smallestNoteDiff = smallestMineDiff]]
 end
 
 if targetAngle then
     local beatms = GameManager:beatToMs(1)
-    if smallestDiff ~= math.huge then
-        beatms = GameManager:beatToMs(smallestDiff)
+    if smallestNoteDiff ~= math.huge then
+        beatms = GameManager:beatToMs(smallestNoteDiff)
     end
-    local duration = beatms / 10
+    local duration = beatms / 20
 
-    -- Always use shortest-path delta from current angle
     local diff = ((targetAngle - self.angle + 180) % 360) - 180
     local finalAngle = self.angle + diff
 
@@ -96,7 +268,7 @@ if targetAngle then
     if self.angleTween then self.angleTween:stop() end
 
     if targetSide then
-        if math.abs(diff) < 1 then
+        if math.abs(diff) < 5 then
             self.angleTween = flux.to(self, duration / 2, {angle = self.angle + 30})
                 :oncomplete(function()
                     self.angleTween = flux.to(self, duration / 2, {angle = self.angle - 30}):ease("outQuad")

@@ -190,7 +190,7 @@ if extrasavedata.chartinfoplus and extrasavedata.chartinfoplus.enabled then
 			str = str .. " Len: " .. tostring(math.floor(length/60)) .. ":" .. tostring(string.format("%02d", math.floor(length%60)))
 		end
 		if extrasavedata.chartinfoplus.fullCombo then
-			FC = tags.getFullCombo(self.levelData)
+			FC = tags.getFullCombo(self.levelData, self.menuItems[self.selection].filename)
 			str = str .. " FC: " .. FC
 		end
 	else

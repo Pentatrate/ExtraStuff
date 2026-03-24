@@ -79,6 +79,7 @@ function chimaeraBoss:initialize(params)
 	self.roarShakeTime = 0
 	self.idleTimes = 0
 	Entity.initialize(self, params)
+	
 end
 
 function chimaeraBoss:anim(anim)

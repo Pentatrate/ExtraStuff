@@ -22,6 +22,7 @@ function PublicoBG:initialize(params)
 	self.bars = em.init('PublicoBars', {dx = self.barDx, x = self.barX, y = self.barY, xScroll = self.barXScroll, barCount = self.barCount, barHeight = self.barHeight, color = self.barColor})
 	self.bars.skipUpdate = true
 	self.bars.skipRender = true
+	self.tween = nil
 end
 
 function PublicoBG.onBeatHook(b)
@@ -34,7 +35,10 @@ function PublicoBG.onBeatHook(b)
 		for i=1,bars.barCount do
 			bars.bars[i] = math.random(minimum,maximum)
 		end
-		flux.to(bars, 50, {barHeight = 0}):ease("outQuad")
+		local dur = 50
+		if cs.bg.tween then cs.bg.tween:stop() end
+		
+		cs.bg.tween = flux.to(bars, dur, {barHeight = 0}):ease("outQuad")
 	end
 end
 

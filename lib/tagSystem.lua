@@ -69,7 +69,19 @@ function tags.getEndTime(leveldata)
 	return 0
 end
 
-function tags.getFullCombo(leveldata)
+function tags.getFullCombo(leveldata, levelpath, tagLoader)
+	local effectiveEvents = leveldata.events
+	if tagLoader then
+		effectiveEvents = tags.expandTagEvents(leveldata.events, tagLoader)
+	elseif levelpath then
+		effectiveEvents = tags.expandTagEvents(
+			leveldata.events,
+			function(tagName)
+				return tags.loadTagEvents(levelpath, tagName)
+			end
+		)
+	end
+
 	local hits = 0
 	local hittableNotes = {
 		block = true,
@@ -81,7 +93,7 @@ function tags.getFullCombo(leveldata)
 		bounce = true,
 		extraTap = true
 	}
-	for i, ev in ipairs(leveldata.events) do
+	for i, ev in ipairs(effectiveEvents) do
 		if hittableNotes[ev.type] then
 			if ev.type == "extraTap" then
 				hits = hits + 1
@@ -92,8 +104,8 @@ function tags.getFullCombo(leveldata)
 				end
 				if not ev.type == "mine" or ev.type == "mineHold" then
 					hits = hits + 1
-				elseif leveldata.events[i-1] then
-					if (leveldata.events[i-1].type == "mine" or leveldata.events[i-1].type == "mineHold") and ev.time == leveldata.events[i-1].time then
+				elseif effectiveEvents[i-1] then
+					if (effectiveEvents[i-1].type == "mine" or effectiveEvents[i-1].type == "mineHold") and ev.time == effectiveEvents[i-1].time then
 						
 					else
 						hits = hits + 1
@@ -156,7 +168,6 @@ function tags.expandTagEvents(events, tagLoader, seen)
 
     return out
 end
-
 
 function tags.calculateLevelLength(timingInfo, endBeat)
 	if not timingInfo or not timingInfo.initial then return 0 end
@@ -406,7 +417,8 @@ end
 
 function tags.loadTagEvents(levelpath, tagName)
 	local tagPath = levelpath .. "tags/" .. tagName .. ".json"
-	if tagName ~= "" and levelpath and love.filesystem.getInfo(tagPath).type == "file" then
+	local pathinfo = love.filesystem.getInfo(tagPath)
+	if tagName ~= "" and levelpath and pathinfo and pathinfo.type == "file" then
 		return dpf.loadJson(tagPath, {})
 	end
 	return {}
