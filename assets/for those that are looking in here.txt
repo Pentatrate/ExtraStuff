@@ -5,6 +5,7 @@ actions.ttf is pretty much all custom the only glyphs that aren't are A, C, D, E
 smallnum.ttf is also pretty much all custom the only glyphs that aren't are 0, 1, 2, 3, 4, 5, 7, and 8. 6 is in the UI in rhythmic shields as Beck has 68/100 S and Hildo has 68/150 health
 rpgtitle is also pretty much all custom. i am not listing more glyphs...
 
-This is somewhat near done.
+i don't think this era chimaera fight will ever be finished.
 
 ads are by noob_y
+fishing book textures are by me
