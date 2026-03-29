@@ -298,27 +298,16 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "obj/GameManager.lua"
-pattern = '''if savedata.options.accessibility.taps == 'auto' then'''
+pattern = '''elseif savedata.options.accessibility.taps == 'auto' then'''
 position = "before"
 payload = '''
-if (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") then
+elseif (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor") then
 	if cs.cBeat >= t.beat then
 		hitTap = true
 		t.hit = true
 		self:addToScore(t.score)
 		table.insert(cs.tapTiming,0)
 	end
-else
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/GameManager.lua"
-pattern = '''return hitTap'''
-position = "before"
-payload = '''
-end
 '''
 match_indent = true
 
