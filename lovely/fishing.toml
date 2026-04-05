@@ -327,6 +327,19 @@ match_indent = true
 [patches.pattern]
 target = "states/Fishing.lua"
 pattern = '''
+love.graphics.draw(self.spr.ditheredfish_eye, project.res.cx + fishW + self.ditheredfish.eyeoffset, y + fishH + math.random(-1, 1),0,1,1,25)
+'''
+position = "at"
+payload = '''
+--love.graphics.draw(self.fish[id].spr,x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+love.graphics.draw(self.spr.ditheredfish_eye, x + fishW + self.ditheredfish.eyeoffset, y + fishH + math.random(-1, 1),0,1,1,25)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Fishing.lua"
+pattern = '''
 self.bookMenu:setSelection(1)
 '''
 position = "at"

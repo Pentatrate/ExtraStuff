@@ -290,4 +290,62 @@ function imguiextra.LabeledSeparator(label, size)
 	imgui.SetWindowFontScale(1)
 end
 
+function imguiextra.PositionEditor(id, x, y, r, edit, offx, offy)
+	imgui.SetNextWindowSize({80,80})
+	local ox = offx or 0
+	local oy = offy or 0
+
+	local flags = imgui.ImGuiWindowFlags_NoResize
+		+ imgui.ImGuiWindowFlags_NoCollapse
+		+ imgui.ImGuiWindowFlags_NoTitleBar
+		+ imgui.ImGuiWindowFlags_NoScrollbar
+		
+	imgui.SetNextWindowPos({(ox + x)*2-40, (oy + y)*2-40},imgui.ImGuiCond_FirstUseEver)
+	if edit then
+		imgui.SetNextWindowPos({(ox + x)*2-40, (oy + y)*2-40})
+		flags = flags + imgui.ImGuiWindowFlags_NoMove
+	end
+
+	imgui.Begin("##posedit_" .. id, true, flags)
+	local pos = imgui.GetWindowPos()
+
+	if edit then
+		imgui.SetCursorPos({5,5})
+		x = helpers.clamp(helpers.InputFloat("X##" .. id, x), 0 - ox, 600 - ox)
+
+		imgui.SetCursorPos({5,22})
+		y = helpers.clamp(helpers.InputFloat("Y##" .. id, y), 0 - oy, 360 - oy)
+
+		imgui.SetCursorPos({5,39})
+		r = helpers.InputFloat("R##" .. id, r or 0) % 360
+	else
+		x = (pos.x + 40) / 2 - ox
+		y = (pos.y + 40) / 2 - oy
+
+		imgui.SetCursorPos({5,5})
+		imgui.Text("X: " .. tostring(x))
+
+		imgui.SetCursorPos({5,22})
+		imgui.Text("Y: " .. tostring(y))
+
+		imgui.SetCursorPos({5,39})
+		imgui.Text("R: " .. tostring(r or 0))
+	end
+
+	imgui.SetCursorPos({5,56})
+	if edit then
+		if imgui.Button("Apply Num##" .. id) then
+			edit = false
+		end
+	else
+		if imgui.Button("Edit Num##" .. id) then
+			edit = true
+		end
+	end
+
+	imgui.End()
+
+	return x, y, r, edit
+end
+
 return imguiextra

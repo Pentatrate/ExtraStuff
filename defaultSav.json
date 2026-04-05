@@ -45,6 +45,9 @@
 	},
 	"splashText": false,
 	"spashTextLeft": false,
+	"splashTextPos": [0,0,-15],
+	"apfladdSplashes": false,
+	"apflSplashTextPos": [0,0,0],
 	"randomizeMenuOnStart": false,
 	"oldMenu": false,
 	

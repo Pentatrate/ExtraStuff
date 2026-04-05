@@ -74,8 +74,6 @@ if config then
 	imgui.SameLine()
 	config.randomizeMenuOnStart = helpers.InputBool("Randomize Menu On Start", (config.randomizeMenuOnStart or false))
 	imgui.Text("Press F9 to edit the menu if Mods is hidden.")
-	config.splashText = helpers.InputBool("Splash Text", (config.splashText or false))
-	config.splashTextLeft = helpers.InputBool("Move Splash Text to Left", (config.splashTextLeft or false))
 	
 	imguiextra.LabeledSeparator("Songselect", 1)
 	

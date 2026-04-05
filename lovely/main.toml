@@ -201,6 +201,25 @@ match_indent = true
 [patches.pattern]
 target = "main.lua"
 pattern = '''
+bit = require "bit"
+'''
+position = "after"
+payload = '''
+if extrasavedata.apfladdSplashes ~= false and splashes then
+	local numberofsplashes = loc.get("extrastuffsplashtext_num")
+	for i = 0, numberofsplashes do
+		local value = loc.get("extrastuffsplashtext_" .. i)
+		value = value:gsub("\n", "")
+		table.insert(splashes, value)
+	end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
 function love.keyreleased(key)
 '''
 position = "after"

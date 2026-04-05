@@ -46,6 +46,17 @@ local function shuffle(t)
 end
 
 if self.editMenu then
+
+	if self.editPosLogoWindow then
+		extrasavedata.moreMMenuCustomization.logoPosOff[1], extrasavedata.moreMMenuCustomization.logoPosOff[2], _, self.editPosLogo = imguiextra.PositionEditor("logo",extrasavedata.moreMMenuCustomization.logoPosOff[1], extrasavedata.moreMMenuCustomization.logoPosOff[2], nil, self.editPosLogo, 300, 100)
+	end
+	if self.editPosESSplashWindow then
+		extrasavedata.splashTextPos[1], extrasavedata.splashTextPos[2], extrasavedata.splashTextPos[3], self.editPosESSplash = imguiextra.PositionEditor("essplash",extrasavedata.splashTextPos[1], extrasavedata.splashTextPos[2], extrasavedata.splashTextPos[3], self.editPosESSplash, extrasavedata.moreMMenuCustomization.logoPosOff[1] + 300+sprites.title.logo:getWidth()/3, extrasavedata.moreMMenuCustomization.logoPosOff[2] + 80 + sprites.title.logo:getHeight()/2)
+	end
+	if self.editPosSplashWindow then
+		extrasavedata.apflSplashTextPos[1], extrasavedata.apflSplashTextPos[2], extrasavedata.apflSplashTextPos[3], self.editPosSplash = imguiextra.PositionEditor("splash",extrasavedata.apflSplashTextPos[1], extrasavedata.apflSplashTextPos[2], extrasavedata.apflSplashTextPos[3], self.editPosSplash, 300, 135)
+	end
+
 	self.editMenu = imgui.Begin("Edit Menu", true)
 	
 	if not self.oldMenu then
@@ -68,7 +79,24 @@ if self.editMenu then
 	else
 		dpf.saveJson("savedata/extraMod.sav", extrasavedata)
 	end
-	imguiextra.LabeledSeparator("Customization", 1)
+	imguiextra.LabeledSeparator("Misc", 1)
+	extrasavedata.splashText = helpers.InputBool("Splash Text", (extrasavedata.splashText or false))
+	extrasavedata.splashTextLeft = helpers.InputBool("Move Splash Text to Left", (extrasavedata.splashTextLeft or false))
+	extrasavedata.apfladdSplashes = helpers.InputBool("Add ES splashes to ApFls splashes", (extrasavedata.apfladdSplashes or false))
+	imgui.TextWrapped("Checking the option above requires restart to change")
+	if imgui.Button("Edit ES Splash Text Offset") then
+		if not extrasavedata.splashTextPos then
+			extrasavedata.splashTextPos = {0,0,-15}
+		end
+		self.editPosESSplashWindow = not self.editPosESSplashWindow
+	end
+	if imgui.Button("Edit ApFls Splash Text Offset") then
+		if not extrasavedata.apflSplashTextPos then
+			extrasavedata.apflSplashTextPos = {0,0,0}
+		end
+		self.editPosSplashWindow = not self.editPosSplashWindow
+	end
+	
 	if not extrasavedata.moreMMenuCustomization then
 		extrasavedata.moreMMenuCustomization = helpers.copytable(extraDefaultSave.moreMMenuCustomization)
 	end
@@ -101,8 +129,11 @@ if self.editMenu then
 			if not extrasavedata.moreMMenuCustomization.logoPosOff then
 				extrasavedata.moreMMenuCustomization.logoPosOff = {0,0}
 			end
-			extrasavedata.moreMMenuCustomization.logoPosOff[1] = helpers.InputFloat("X Offset", extrasavedata.moreMMenuCustomization.logoPosOff[1] or 0)
-			extrasavedata.moreMMenuCustomization.logoPosOff[2] = helpers.InputFloat("Y Offset", extrasavedata.moreMMenuCustomization.logoPosOff[2] or 0)
+			--extrasavedata.moreMMenuCustomization.logoPosOff[1] = helpers.InputFloat("X Offset", extrasavedata.moreMMenuCustomization.logoPosOff[1] or 0)
+			--extrasavedata.moreMMenuCustomization.logoPosOff[2] = helpers.InputFloat("Y Offset", extrasavedata.moreMMenuCustomization.logoPosOff[2] or 0)
+			if imgui.Button("Edit Offset") then
+				self.editPosLogoWindow = not self.editPosLogoWindow
+			end
 			
 			if not self.oldMenu then
 				imguiextra.LabeledSeparator("RadialList Params", 1)
@@ -471,7 +502,7 @@ love.graphics.draw(sprites.title.logo,project.res.cx,100+ self.logoY,0,self.logo
 position = "at"
 payload = '''
 if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization.enabled and extrasavedata.moreMMenuCustomization.logoPosOff then
-	love.graphics.draw(sprites.title.logo,project.res.cx + extrasavedata.moreMMenuCustomization.logoPosOff[1],100+ self.logoY + extrasavedata.moreMMenuCustomization.logoPosOff[2],0,self.logoZoom, self.logoZoom,sprites.title.logo:getWidth()/2,sprites.title.logo:getHeight()/2)
+	love.graphics.draw(sprites.title.logo,project.res.cx + extrasavedata.moreMMenuCustomization.logoPosOff[1],100 + self.logoY + extrasavedata.moreMMenuCustomization.logoPosOff[2],0,self.logoZoom, self.logoZoom,sprites.title.logo:getWidth()/2,sprites.title.logo:getHeight()/2)
 else
 	love.graphics.draw(sprites.title.logo,project.res.cx,100+ self.logoY,0,self.logoZoom, self.logoZoom,170,32)
 end
@@ -537,17 +568,27 @@ if self.splashtext then
 	
 	local r = -15
 	local x = sprites.title.logo:getWidth()/3
-	
 	if extrasavedata.splashTextLeft then
 		x = -x
-		r = 15
 	end
+	
 	x = project.res.cx + x
 	local y = 80 + sprites.title.logo:getHeight()/2 + self.logoY
 	if extrasavedata.moreMMenuCustomization and extrasavedata.moreMMenuCustomization.enabled and extrasavedata.moreMMenuCustomization.logoPosOff then
 		x = extrasavedata.moreMMenuCustomization.logoPosOff[1] + x
 		y = extrasavedata.moreMMenuCustomization.logoPosOff[2] + y
 	end
+	
+	if extrasavedata.splashTextPos then
+		local pos = extrasavedata.splashTextPos
+		x = x + pos[1]
+		y = y + pos[2]
+		r = pos[3]
+	end
+	if extrasavedata.splashTextLeft then
+		r = -r
+	end
+	
 	if self.splashtext == loc.get("extrastuffsplashtext_95") then
 		color(0)
 		love.graphics.setFont(font)
@@ -569,6 +610,22 @@ if self.splashtext then
 	color(0)
 	love.graphics.setFont(fonts.digitalDisco)
 end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+love.graphics.printf(self.splash or "",project.res.cx,self.logoY + 135,project.res.x,"center",0,self.logoZoom,self.logoZoom,project.res.cx)
+'''
+position = "at"
+payload = '''
+local offset = {0,0,0}
+if extrasavedata.apflSplashTextPos then
+	offset = extrasavedata.apflSplashTextPos
+end
+love.graphics.printf(self.splash or "",project.res.cx + offset[1],self.logoY + 135 + offset[2],project.res.x,"center",offset[3],self.logoZoom,self.logoZoom,project.res.cx)
 '''
 match_indent = true
 
