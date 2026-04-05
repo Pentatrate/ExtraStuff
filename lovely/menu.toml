@@ -625,7 +625,7 @@ local offset = {0,0,0}
 if extrasavedata.apflSplashTextPos then
 	offset = extrasavedata.apflSplashTextPos
 end
-love.graphics.printf(self.splash or "",project.res.cx + offset[1],self.logoY + 135 + offset[2],project.res.x,"center",offset[3],self.logoZoom,self.logoZoom,project.res.cx)
+love.graphics.printf(self.splash or "",project.res.cx + offset[1],self.logoY + 135 + offset[2],project.res.x,"center",math.rad(offset[3]),self.logoZoom,self.logoZoom,project.res.cx)
 '''
 match_indent = true
 

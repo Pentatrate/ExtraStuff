@@ -315,9 +315,10 @@ function imguiextra.PositionEditor(id, x, y, r, edit, offx, offy)
 
 		imgui.SetCursorPos({5,22})
 		y = helpers.clamp(helpers.InputFloat("Y##" .. id, y), 0 - oy, 360 - oy)
-
-		imgui.SetCursorPos({5,39})
-		r = helpers.InputFloat("R##" .. id, r or 0) % 360
+		if r then
+			imgui.SetCursorPos({5,39})
+			r = helpers.InputFloat("R##" .. id, r) % 360
+		end
 	else
 		x = (pos.x + 40) / 2 - ox
 		y = (pos.y + 40) / 2 - oy
@@ -327,9 +328,10 @@ function imguiextra.PositionEditor(id, x, y, r, edit, offx, offy)
 
 		imgui.SetCursorPos({5,22})
 		imgui.Text("Y: " .. tostring(y))
-
-		imgui.SetCursorPos({5,39})
-		imgui.Text("R: " .. tostring(r or 0))
+		if r then
+			imgui.SetCursorPos({5,39})
+			imgui.Text("R: " .. tostring(r))
+		end
 	end
 
 	imgui.SetCursorPos({5,56})
