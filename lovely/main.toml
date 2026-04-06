@@ -209,7 +209,7 @@ if extrasavedata.apfladdSplashes ~= false and splashes then
 	local numberofsplashes = loc.get("extrastuffsplashtext_num")
 	for i = 0, numberofsplashes do
 		local value = loc.get("extrastuffsplashtext_" .. i)
-		value = value:gsub("\n", "")
+		value = value:gsub("\n", " ")
 		table.insert(splashes, value)
 	end
 end

@@ -53,6 +53,7 @@
   "extrastuffsplashtext_94": "I have part time work.\nFeel free to join!",
   "extrastuffsplashtext_113": "i would add other language splash texts,\nbut i don't speak that many",
   "extrastuffsplashtext_116": "it is cold, let him in",
+  "extrastuffsplashtext_122": "[rotate=20][shakeslow=1]WOOOOOOO",
   
   "extrastuffsplashtext_117": "touch asphalt",
   "extrastuffsplashtext_33": "thanks Kakadu for\nmaking Beatblock",
@@ -104,7 +105,7 @@
   "extrastuffsplashtext_105": "will you reflect?",
   "extrastuffsplashtext_106": "C-V B-ME wait... god damn it",
   "extrastuffsplashtext_107": "are we... connected?",
-  "extrastuffsplashtext_111": "going in the mines, hope mines don't barrage me",
+  "extrastuffsplashtext_111": "going in the mines, hope\nbounces don't barrage me",
   "extrastuffsplashtext_112": "will you help your\nladybug friend?",
   "extrastuffsplashtext_114": "what do you mean we're\nbeing diverted to the sun?",
   "extrastuffsplashtext_115": "\"i hope a sword doesn't kill me\"\n-Cranky",
@@ -116,6 +117,7 @@
   "extrastuffsplashtext_75": "i wish my ocean\nwas more open",
   "extrastuffsplashtext_76": "Error\nstates/Menu.lua:42: expected ')'",
 
+  "extrastuffsplashtext_121": "Play Drillmin!",
   "extrastuffsplashtext_69": "QUB must click",
   "extrastuffsplashtext_120": "temporary... like a temporal",
   "extrastuffsplashtext_70": "Play vivid/stasis!",
@@ -124,7 +126,7 @@
   "extrastuffsplashtext_73": "Play UNBEATABLE!",
   "extrastuffsplashtext_109": "what a heavenly studio",
   "extrastuffsplashtext_85": "GeForce Now?",
-  "extrastuffsplashtext_num": 121,
+  "extrastuffsplashtext_num": 123,
   
   "extrastuffCrankPlays": "Bonky Played"
 }
