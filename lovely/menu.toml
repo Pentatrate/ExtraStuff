@@ -487,8 +487,8 @@ else
 end
 
 if extrasavedata.splashText or false then
-	--self.splashtext = loc.get("extrastuffsplashtext_" .. math.random(0,loc.get("extrastuffsplashtext_num")))
-	self.splashtext = loc.get("extrastuffsplashtext_122")
+	self.splashtext = loc.get("extrastuffsplashtext_" .. math.random(0,loc.get("extrastuffsplashtext_num")))
+	--self.splashtext = loc.get("extrastuffsplashtext_122")
 end
 '''
 match_indent = true
