@@ -16,51 +16,116 @@ local function middleAngle(a, b)
     local diff = ((b - a + 180) % 360 + 360) % 360 - 180
     return ((a + diff / 2) % 360 + 360) % 360
 end
---[[local function averageAnglesDeg(angles)
-    local sinSum, cosSum = 0, 0
-    for _, angle in ipairs(angles) do
-        local rad = math.rad(angle)
-        sinSum = sinSum + math.sin(rad)
-        cosSum = cosSum + math.cos(rad)
-    end
-    return math.deg(math.atan2(sinSum, cosSum))
-end]]
 
---local closestMines = {}
-local closestNotes = {}
---local smallestMineDiff = math.huge
-local smallestNoteDiff = math.huge
---[[
-local function considerMine(angle, beatPos)
-    local diff = math.abs(beatPos - cs.cBeat)
-    if diff < smallestMineDiff then
-        smallestMineDiff = diff
-        closestMines = { { angle = angle, beat = beatPos, dist = diff } }
-    elseif diff == smallestMineDiff then
-        table.insert(closestMines, { angle = angle, beat = beatPos, dist = diff  })
+local function splitAndMerge(intervals)
+    local flat = {}
+    for _, iv in ipairs(intervals) do
+        if iv.lo <= iv.hi then
+            table.insert(flat, {lo = iv.lo, hi = iv.hi})
+        else
+            table.insert(flat, {lo = iv.lo, hi = 360})
+            table.insert(flat, {lo = 0,     hi = iv.hi})
+        end
+    end
+
+    table.sort(flat, function(a, b) return a.lo < b.lo end)
+
+    local merged = {}
+    for _, iv in ipairs(flat) do
+        if #merged == 0 or iv.lo > merged[#merged].hi then
+            table.insert(merged, {lo = iv.lo, hi = iv.hi})
+        else
+            merged[#merged].hi = math.max(merged[#merged].hi, iv.hi)
+        end
+    end
+    return merged
+end
+
+local function invertAngles(intervals)
+    if #intervals == 0 then
+        return {{lo = 0, hi = 360}}
+    end
+
+    local inverted = {}
+
+    if intervals[1].lo > 0 then
+        table.insert(inverted, {lo = 0, hi = intervals[1].lo})
+    end
+
+    for i = 1, #intervals - 1 do
+        local gapLo = intervals[i].hi
+        local gapHi = intervals[i + 1].lo
+        if gapLo < gapHi then
+            table.insert(inverted, {lo = gapLo, hi = gapHi})
+        end
+    end
+
+    if intervals[#intervals].hi < 360 then
+        table.insert(inverted, {lo = intervals[#intervals].hi, hi = 360})
+    end
+
+    return inverted
+end
+
+local smallestPaddle = math.huge
+local enabledPaddles = {}
+for _, p in ipairs(cs.p.paddles) do
+    if p.enabled then
+        table.insert(enabledPaddles, p)
+		if p.paddleSize < smallestPaddle then
+			smallestPaddle = p.paddleSize
+		end
     end
 end
-]]
-local function considerNote(angle, beatPos)
+
+local closestBasic = {}
+local closestSides = {}
+local closestMines = {}
+local activeMineHolds = {}
+local smallestBasicDiff = math.huge
+local smallestSidesDiff = math.huge
+local smallestMinesDiff = math.huge
+
+local function considerNote(angle, beatPos, category)
     local diff = math.abs(beatPos - cs.cBeat)
-    if diff < smallestNoteDiff then
-        smallestNoteDiff = diff
-        closestNotes = { { angle = angle, beat = beatPos, dist = diff } }
-    elseif diff == smallestNoteDiff then
-        table.insert(closestNotes, { angle = angle, beat = beatPos, dist = diff  })
+    local list, smallest
+
+    if category == "basic" then
+        list = closestBasic
+        smallest = smallestBasicDiff
+    elseif category == "sides" then
+        list = closestSides
+        smallest = smallestSidesDiff
+    elseif category == "mines" then
+        list = closestMines
+        smallest = smallestMinesDiff
+    end
+
+    if diff < smallest then
+        if category == "basic" then smallestBasicDiff = diff
+        elseif category == "sides" then smallestSidesDiff = diff
+        elseif category == "mines" then smallestMinesDiff = diff
+        end
+        list = { { angle = angle, beat = beatPos, dist = diff } }
+        if category == "basic" then closestBasic = list
+        elseif category == "sides" then closestSides = list
+        elseif category == "mines" then closestMines = list
+        end
+    elseif diff == smallest then
+        table.insert(list, { angle = angle, beat = beatPos, dist = diff })
     end
 end
 
 for _, v in ipairs(entities) do
     if v.hb then
         if v.name == "block" and not v.hitYet then
-            considerNote(v.angle, v.hb)
+            considerNote(v.angle, v.hb, "basic")
         elseif v.name == "hold" and v.duration and (not v.hitYet or v.started) then
             if v.duration == 0 then
                 local normAng1 = (v.startAngle or v.angle) % 360
                 local normAng2 = (v.angle2 + (v.tesAngle or 0)) % 360
                 local mid = middleAngle(normAng1, normAng2)
-                considerNote(mid, v.hb)
+                considerNote(mid, v.hb, "basic")
             else
                 local holdEnd = v.hb + v.duration
                 local stepSize = math.max((v.leniencyFrames + cs.extraHoldLeniency) / 60, 0.001)
@@ -68,90 +133,118 @@ for _, v in ipairs(entities) do
                 local beat = v.hb
                 while beat < holdEnd do
                     local t = (beat - v.hb) / v.duration
-                    considerNote(helpers.interpolate(startAngle, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat)
+                    considerNote(helpers.interpolate(startAngle, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat, "basic")
                     beat = beat + stepSize
                 end
-                considerNote(v.angle2 + (v.tesAngle or 0), holdEnd)
+                considerNote(v.angle, v.hb, "basic")
+                considerNote(v.angle2 + (v.tesAngle or 0), holdEnd, "basic")
             end
         elseif v.name == "bounce" and not v.hitYet then
-            considerNote(v.endAngle, v.hb)
-        elseif v.name == "side" and not v.sideHitYet and v:inTimingWindow(v.sideTimingWindow) then
-            considerNote(v.angle, v.hb)
-		 --[[
+            considerNote(v.endAngle, v.hb, "basic")
         elseif v.name == "mine" and not v.hitYet then
-            considerMine(v.angle, v.hb)
-        elseif v.name == "mineHold" and v.duration and (not v.hitYet or v.started) then
+            considerNote(v.angle, v.hb, "mines")
+        elseif v.name == "mineHold" and v.duration and (not v.hitYet or (v.hb < cs.cBeat and not ((v.hb + v.duration) < cs.cBeat))) then
+			local holdEnd = v.hb + v.duration
+			--local stepSize = 0.005
+			local startAngle = v.startAngle or v.angle
 			if v.duration == 0 then
-				local startAng = v.startAngle or v.angle
-				local endAng = v.angle2 + (v.tesAngle or 0)
-				local angdiff = math.abs(startAng - endAng)
-				local normAng1 = startAng % 360
-				local normAng2 = endAng % 360
-				local mid = middleAngle(normAng1, normAng2)
-				if angdiff > 180 then
-					considerMine((mid + 180) % 360, v.hb)
-				elseif angdiff == 180 then
-					if endAng > startAng then
-						considerMine((mid + 180) % 360, v.hb)
-					else
-						considerMine(mid, v.hb)
-					end
-				else
-					considerMine(mid, v.hb)
+				local a1 = v.angle
+				local a2 = v.angle2 + (v.tesAngle or 0)
+				local halfPaddle = smallestPaddle/2
+				local step = math.max(halfPaddle - 1, 1)
+
+				local arcDiff = a2 - a1
+				local steps = math.ceil(math.abs(arcDiff) / step)
+				for i = 0, steps do
+					local t = steps > 0 and (i / steps) or 0
+					local ang = (a1 + arcDiff * t) % 360
+					considerNote(ang % 360, v.hb, "mines")
 				end
 			else
-				local holdEnd = v.hb + v.duration
-                local stepSize = math.max((v.leniencyFrames + cs.extraHoldLeniency) / 60, 0.001)
-                local startAng = v.startAngle or v.angle
-                local beat = v.hb
-                while beat < holdEnd do
-                    local t = (beat - v.hb) / v.duration
-                    considerMine(helpers.interpolate(startAng, v.angle2 + (v.tesAngle or 0), t, v.holdEase), beat)
-                    beat = beat + stepSize
-                end
-                considerMine(startAng, v.hb)
-                considerMine(v.angle2 + (v.tesAngle or 0), holdEnd)
-			end]]
+				--im going to kill myself
+				--i know im going to have to do this unless penta finishes tooly which is more likely then me finishing bonky
+				--who im i kidding penta is definately finishing tooly before i finish bonky he already got mineholds down pretty much in like a 3 days since saying he was... WHAT ITS BEEN ONLY 3 DAYS?
+			end
+        elseif v.name == "side" and not v.sideHitYet then
+            considerNote(v.angle, v.hb, "sides")
         end
     end
 end
 
-local seen = {}
-local uniqueNotes = {}
-for _, note in ipairs(closestNotes) do
-    local key = math.floor(((note.angle % 360) + 360) % 360 * 1000 + 0.5)
-    if not seen[key] then
-        seen[key] = true
-        table.insert(uniqueNotes, note)
+local function deduplicateNotes(noteList)
+    local seen = {}
+    local unique = {}
+    for _, note in ipairs(noteList) do
+        local key = math.floor(((note.angle % 360) + 360) % 360 * 1000 + 0.5)
+        if not seen[key] then
+            seen[key] = true
+            table.insert(unique, note)
+        end
     end
-end
-closestNotes = uniqueNotes
-
-local enabledPaddles = {}
-for _, p in ipairs(cs.p.paddles) do
-    if p.enabled then
-        table.insert(enabledPaddles, p)
-    end
-end
---[[
-local forbiddenAngles = {}
-for _, m in ipairs(closestMines) do
-	table.insert(forbiddenAngles, m.angle % 360)
+    return unique
 end
 
-local function touchingForbiddenAngs(angle)
-	for _, p in ipairs(enabledPaddles) do
-		local hi = angle + p.baseAngle + p.paddleSize / 2
-		local lo = angle + p.baseAngle - p.paddleSize / 2
-		for _, a in ipairs(forbiddenAngles) do
-			if a < hi and a > lo then
-				return true
-			end
-		end
-	end
-	return false
+closestBasic = deduplicateNotes(closestBasic)
+closestSides = deduplicateNotes(closestSides)
+closestMines = deduplicateNotes(closestMines)
+
+local activeSideAngles = {}
+for _, v in ipairs(entities) do
+    if v.name == "side" and not v.sideHitYet and v.inTimingWindow and v:inTimingWindow(v.sideTimingWindow) then
+        table.insert(activeSideAngles, v.angle)
+    end
 end
-]]
+
+local closestNotes
+local smallestNoteDiff
+if #activeSideAngles > 0 then
+    closestNotes = {}
+    for _, angle in ipairs(activeSideAngles) do
+        table.insert(closestNotes, { angle = angle, beat = cs.cBeat, dist = 0 })
+    end
+    smallestNoteDiff = 0
+else
+    closestNotes = closestBasic
+    smallestNoteDiff = smallestBasicDiff
+end
+
+local merged = {}
+local safe = {}
+
+if #closestMines > 0 and #enabledPaddles > 0 then
+    local blockedIntervals = {}
+    for _, mine in ipairs(closestMines) do
+        for _, p in ipairs(enabledPaddles) do
+            local halfWidth = (p.paddleSize or 70) / 2
+            local paddleCenter = mine.angle + cs.objectRotation + p.baseAngle
+            local lo = (paddleCenter - halfWidth + 360) % 360
+            local hi = (paddleCenter + halfWidth) % 360
+            table.insert(blockedIntervals, {lo = lo, hi = hi})
+        end
+    end
+    merged = splitAndMerge(blockedIntervals)
+    safe = invertAngles(merged)
+end
+
+for i, iv in ipairs(merged) do
+    print(string.format("blocked[%d]: lo=%.1f hi=%.1f", i, iv.lo, iv.hi))
+end
+for i, iv in ipairs(safe) do
+    print(string.format("safe[%d]: lo=%.1f hi=%.1f mid=%.1f", i, iv.lo, iv.hi, (iv.lo + iv.hi) / 2))
+end
+
+local function paddleHitsMine(crankAngle, mineAngle)
+    for _, p in ipairs(enabledPaddles) do
+        local halfWidth = (p.paddleSize or 70) / 2
+        local paddleCenter = crankAngle + p.baseAngle + cs.objectRotation
+        local err = math.abs(((mineAngle + cs.objectRotation - paddleCenter + 180) % 360) - 180)
+        if err <= halfWidth then
+            return true
+        end
+    end
+    return false
+end
+
 local function scoreAngle(candidateAngle)
     local total = 0
     for _, note in ipairs(closestNotes) do
@@ -163,73 +256,129 @@ local function scoreAngle(candidateAngle)
         end
         total = total + best
     end
-    --[[if touchingForbiddenAngs(candidateAngle) then
-        total = total + 10000
-    end]]
     return total
 end
 
-local targetAngle = nil
 
-if #closestNotes > 0 and #enabledPaddles > 0 then --and smallestNoteDiff <= smallestMineDiff then
+local function angleHitsMines(crankAngle, mineList)
+    for _, mine in ipairs(mineList) do
+        if paddleHitsMine(crankAngle, mine.angle) then
+            return true
+        end
+    end
+    return false
+end
+
+local targetAngle = nil
+local paddleSize = (enabledPaddles[1] and enabledPaddles[1].paddleSize) or 70
+
+local minesOnly = smallestMinesDiff < smallestBasicDiff and smallestMinesDiff < smallestSidesDiff
+local minesSameAs = (smallestMinesDiff == smallestBasicDiff) or (smallestMinesDiff == smallestSidesDiff and #activeSideAngles > 0)
+
+if minesOnly and #closestMines > 0 and #enabledPaddles > 0 then
+    if not angleHitsMines(self.angle, closestMines) then
+        targetAngle = self.angle
+    else
+        local bestGap = nil
+        local bestWidth = 0
+        for _, gap in ipairs(safe) do
+            local width = gap.hi - gap.lo
+            if width > bestWidth then
+                bestWidth = width
+                bestGap = gap
+            end
+        end
+        if bestGap then
+            targetAngle = (bestGap.lo + bestGap.hi) / 2
+        else
+            targetAngle = self.angle -- nowhere safe just like me
+        end
+    end
+
+elseif minesSameAs and #closestMines > 0 and #closestNotes > 0 and #enabledPaddles > 0 then
+    local bestScore = math.huge
+    local bestAngle = self.angle
+
     local candidates = {}
 
     for _, note in ipairs(closestNotes) do
         for _, p in ipairs(enabledPaddles) do
             local needed = note.angle + cs.objectRotation + p.baseAngle
-            table.insert(candidates, needed % 360)
-            local halfWidth = (p.paddleSize or 35) / 2
-            for offset = -halfWidth + 1, halfWidth - 1, 1 do
+            local width = (p.paddleSize or 70) * 0.75
+            for offset = -width + 1, width - 1, 1 do
                 table.insert(candidates, (needed + offset) % 360)
+            end
+            table.insert(candidates, needed % 360)
+        end
+    end
+
+    for _, gap in ipairs(safe) do
+        table.insert(candidates, (gap.lo + gap.hi) / 2)
+    end
+
+    for _, candidate in ipairs(candidates) do
+        local inSafe = false
+        for _, gap in ipairs(safe) do
+            if candidate > gap.lo and candidate < gap.hi then
+                inSafe = true
+                break
+            end
+        end
+        if inSafe then
+            local score = scoreAngle(candidate)
+            if score < bestScore then
+                bestScore = score
+                bestAngle = candidate
             end
         end
     end
 
-    if #closestNotes > 1 then
-        for i = 1, #closestNotes do
-            for j = i + 1, #closestNotes do
-                for _, p in ipairs(enabledPaddles) do
-                    local ang1 = closestNotes[i].angle + cs.objectRotation + p.baseAngle
-                    local ang2 = closestNotes[j].angle + cs.objectRotation + p.baseAngle
-                    local mid = middleAngle(ang1, ang2)
-                    table.insert(candidates, mid)
-                    local halfWidth = (p.paddleSize or 35) / 2
-                    for offset = -halfWidth + 1, halfWidth - 1, 1 do
-                        table.insert(candidates, (mid + offset) % 360)
+    targetAngle = bestAngle
+else
+    if #closestNotes > 0 and #enabledPaddles > 0 then
+        local candidates = {}
+
+        for _, note in ipairs(closestNotes) do
+            for _, p in ipairs(enabledPaddles) do
+                local needed = note.angle + cs.objectRotation + p.baseAngle
+                table.insert(candidates, needed % 360)
+                local width = (p.paddleSize or 70) * 0.75
+                for offset = -width + 1, width - 1, 1 do
+                    table.insert(candidates, (needed + offset) % 360)
+                end
+            end
+        end
+
+        if #closestNotes > 1 then
+            for i = 1, #closestNotes do
+                for j = i + 1, #closestNotes do
+                    for _, p in ipairs(enabledPaddles) do
+                        local ang1 = closestNotes[i].angle + cs.objectRotation + p.baseAngle
+                        local ang2 = closestNotes[j].angle + cs.objectRotation + p.baseAngle
+                        local mid = middleAngle(ang1, ang2)
+                        table.insert(candidates, mid)
+                        local halfWidth = (p.paddleSize or 35) / 2
+                        for offset = -halfWidth + 1, halfWidth - 1, 1 do
+                            table.insert(candidates, (mid + offset) % 360)
+                        end
                     end
                 end
             end
         end
-    end
 
-    local tiebreakAngle = 0
-    if #closestNotes > 0 then
-        local first = (closestNotes[1].angle + cs.objectRotation) % 360
-        tiebreakAngle = first
-        for i = 2, #closestNotes do
-            local a = (closestNotes[i].angle + cs.objectRotation) % 360
-            tiebreakAngle = middleAngle(tiebreakAngle, a)
+        local tiebreakAngle = 0
+        if #closestNotes > 0 then
+            local first = (closestNotes[1].angle + cs.objectRotation) % 360
+            tiebreakAngle = first
+            for i = 2, #closestNotes do
+                local a = (closestNotes[i].angle + cs.objectRotation) % 360
+                tiebreakAngle = middleAngle(tiebreakAngle, a)
+            end
         end
-    end
 
-    local bestScore = math.huge
-    local bestAngle = self.angle
+        local bestScore = math.huge
+        local bestAngle = self.angle
 
-    for _, candidate in ipairs(candidates) do
-        local paddleHalf = 0
-        for _, p in ipairs(enabledPaddles) do
-            paddleHalf = math.max(paddleHalf, (p.paddleSize or 35) / 2)
-        end
-		local score = scoreAngle(candidate)
-		if score < bestScore or (score <= bestScore + 0.01 and
-			math.abs(((candidate - tiebreakAngle + 180) % 360) - 180) <
-			math.abs(((bestAngle - tiebreakAngle + 180) % 360) - 180)) then
-			bestScore = score
-			bestAngle = candidate
-		end
-    end
-
-    if bestScore == math.huge then
         for _, candidate in ipairs(candidates) do
             local score = scoreAngle(candidate)
             if score < bestScore or (score <= bestScore + 0.01 and
@@ -239,47 +388,30 @@ if #closestNotes > 0 and #enabledPaddles > 0 then --and smallestNoteDiff <= smal
                 bestAngle = candidate
             end
         end
-    end
 
-    targetAngle = bestAngle
---[[elseif #closestMines > 0 then
-	targetAngle = (averageAnglesDeg(forbiddenAngles) + 180) % 360
-	smallestNoteDiff = smallestMineDiff]]
+        targetAngle = bestAngle
+    end
 end
 
 if targetAngle then
+    local relevantDiff = smallestNoteDiff
+
+    if minesOnly then
+        relevantDiff = math.max(smallestMinesDiff,0.01)
+    elseif minesSameAs then
+        relevantDiff = math.min(smallestMinesDiff, smallestNoteDiff)
+    end
+
     local beatms = GameManager:beatToMs(1)
-    if smallestNoteDiff ~= math.huge then
-        beatms = GameManager:beatToMs(smallestNoteDiff)
+    if relevantDiff ~= math.huge then
+        beatms = GameManager:beatToMs(relevantDiff)
     end
     local duration = beatms / 20
 
     local diff = ((targetAngle - self.angle + 180) % 360) - 180
     local finalAngle = self.angle + diff
 
-    local targetSide = nil
-    for _, v in ipairs(entities) do
-        if v.hb and v.name == "side" and not v.sideHitYet and v:inTimingWindow(v.sideTimingWindow) then
-            targetSide = v
-            break
-        end
-    end
-
-    if self.angleTween then self.angleTween:stop() end
-
-    if targetSide then
-        if math.abs(diff) < 5 then
-            self.angleTween = flux.to(self, duration / 2, {angle = self.angle + 30})
-                :oncomplete(function()
-                    self.angleTween = flux.to(self, duration / 2, {angle = self.angle - 30}):ease("outQuad")
-                end)
-        else
-            local wiggle = diff > 0 and 30 or -30
-            self.angleTween = flux.to(self, duration, {angle = finalAngle + wiggle}):ease("outQuad")
-        end
-    else
-        self.angleTween = flux.to(self, duration, {angle = finalAngle}):ease("outQuad")
-    end
+    self.angleTween = flux.to(self, duration, {angle = finalAngle}):ease("outQuad")
 end
 else
 '''
