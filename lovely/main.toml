@@ -117,6 +117,9 @@ function tryTriggerJumpscare()
 		end)
 		te.playOne(sounds.foxyjumpscare,"static",'sfx',1)
 		jumpscareActive = true
+		if cs.name == "Game" then
+			cs.gotJumpscared = true
+		end
 	end
 end
 '''
@@ -130,6 +133,7 @@ pattern = '''
 '''
 position = "after"
 payload = '''
+print(cs.gotJumpscared)
 if not getNewAdKeys then
 	landscapeAdKeys = {}
 	portraitAdKeys = {}
@@ -261,7 +265,11 @@ if extrasavedata.robloxAds then
 	end
 	love.graphics.draw(sprites.ads.landscape[currentLandscapeAd], w/2, 0, 0, s, s, 364)
 	love.graphics.draw(sprites.ads.portrait[currentPortraitAd], 0, h/2, 0, s, s, 0, 300)
-	love.graphics.draw(sprites.ads.square[currentSquareAd], w, h, 0, s, s, 300, 250)
+	if cs.name == "Results" then
+		love.graphics.draw(sprites.ads.square[currentSquareAd], w, h/2, 0, s, s, 300, 250)
+	else
+		love.graphics.draw(sprites.ads.square[currentSquareAd], w, h, 0, s, s, 300, 250)
+	end
 end
 '''
 match_indent = true

@@ -192,7 +192,7 @@ local activeSideAngles = {}
 for _, v in ipairs(entities) do
     if v.name == "side" and not v.sideHitYet and v.inTimingWindow and v:inTimingWindow(v.sideTimingWindow) then
         table.insert(activeSideAngles, v.angle)
-    end
+	end
 end
 
 local closestNotes
@@ -202,7 +202,7 @@ if #activeSideAngles > 0 then
     for _, angle in ipairs(activeSideAngles) do
         table.insert(closestNotes, { angle = angle, beat = cs.cBeat, dist = 0 })
     end
-    smallestNoteDiff = 0
+    smallestNoteDiff = 0.05
 else
     closestNotes = closestBasic
     smallestNoteDiff = smallestBasicDiff
@@ -440,29 +440,6 @@ elseif (extrasavedata.playingCrank) and (cs.name == "Game" or cs.name == "Editor
 		self:addToScore(t.score)
 		table.insert(cs.tapTiming,0)
 	end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "states/Results.lua"
-pattern = '''savedata.costumes.currentCostume == "jolly" or'''
-position = "before"
-payload = '''
-extrasavedata.playingCrank or
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "states/Results.lua"
-pattern = '''if savedata.options.accessibility.taps ~= 'default' then'''
-position = "before"
-payload = '''
-if extrasavedata.playingCrank then
-	if str ~= '' then str = str .. ', ' end
-	str = str .. loc.get('extrastuffCrankPlays')
-end
 '''
 match_indent = true
 

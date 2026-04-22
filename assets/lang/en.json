@@ -128,5 +128,13 @@
   "extrastuffsplashtext_85": "GeForce Now?",
   "extrastuffsplashtext_num": 123,
   
-  "extrastuffCrankPlays": "Bonky Played"
+  "extrastuffCrankPlays": "Bonky Played",
+  "extrastuffMoveTowardMouse": "Cranky Follows Mouse",
+  "extrastuffArrowKey": "Arrow Keys Enabled",
+  "extrastuffOnlyArrowKey": "Only Arrow Keys",
+  "extrastuffHasAds": "Ads",
+  "extrastuffInversed": "Oops! All Inverses",
+  "extrastuffAllTaps": "Oops! All Taps",
+  "extrastuffGotJumpscared": "Got Jumpscared",
+  "extrastuffNegativeSC": "Negative Scrollspeed"
 }

@@ -36,3 +36,144 @@ function st:goToHiddenLevel(levelPath, transitionState, variant)
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Game.lua"
+pattern = '''
+cs.maxCombo = self.maxCombo
+'''
+position = "after"
+payload = '''
+cs.gotJumpscared = self.gotJumpscared
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''savedata.costumes.currentCostume == "jolly" or'''
+position = "before"
+payload = '''
+extrasavedata.playingCrank or
+extrasavedata.movesTowardsMouse or
+extrasavedata.arrowKeyControls or
+extrasavedata.onlyArrowKeys or
+extrasavedata.robloxAds or
+extrasavedata.allInverse or
+extrasavedata.allTap or
+extrasavedata.alwaysNegativeSC or
+cs.gotJumpscared or
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''if savedata.options.accessibility.taps ~= 'default' then'''
+position = "before"
+payload = '''
+if extrasavedata.playingCrank then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffCrankPlays')
+end
+if extrasavedata.movesTowardsMouse then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffMoveTowardMouse')
+end
+if extrasavedata.robloxAds then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffHasAds')
+end
+if extrasavedata.onlyArrowKeys then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffOnlyArrowKey')
+elseif extrasavedata.arrowKeyControls then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffArrowKey')
+end
+if extrasavedata.allInverse then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffInversed')
+end
+if extrasavedata.allTap then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffAllTaps')
+end
+if extrasavedata.alwaysNegativeSC then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffNegativeSC')
+end
+if cs.gotJumpscared then
+	if str ~= '' then str = str .. ', ' end
+	str = str .. loc.get('extrastuffGotJumpscared')
+end
+--print(fonts.digitalDisco:getHeight())
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''
+color()
+love.graphics.polygon('fill',trapezoid)
+color(1)
+love.graphics.polygon('line',trapezoid)
+love.graphics.print(str, 600 - textWidth - 5, project.res.y - 18 + (35 * self.zoomIn))
+'''
+position = "at"
+payload = '''
+print(str)
+if textWidth > 500 then
+    local padding = { x = 10, y = 3 }
+    local limit = 500
+    local rows = math.ceil(textWidth / limit)
+    local topY = project.res.y - 19 + (35 * self.zoomIn) - (rows * textHeight/2)
+    local bottomY = project.res.y +  1 + (35 * self.zoomIn)
+    local trapezoid = {
+        602, topY,     -- point 1
+        600 - 510, topY,     -- point 2
+        600 - 530, bottomY,  -- point 3
+        602, bottomY,  -- point 4
+    }
+    color()
+    love.graphics.polygon('fill', trapezoid)
+    color(1)
+    love.graphics.polygon('line', trapezoid)
+    love.graphics.printf(str, 590 - limit, topY + padding.y, limit, "right")
+else
+	color()
+	love.graphics.polygon('fill',trapezoid)
+	color(1)
+	love.graphics.polygon('line',trapezoid)
+	love.graphics.print(str, 600 - textWidth - 5, project.res.y - 18 + (35 * self.zoomIn))
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/Results.lua"
+pattern = '''
+			local trapezoid = {
+				602, 					project.res.y - 19 + (35 * self.zoomIn),		-- point 1
+				600 - (textWidth+10), 	project.res.y - 19 + (35 * self.zoomIn),		-- point 2
+				600 - (textWidth+30), 	project.res.y +  1 + (35 * self.zoomIn),		-- point 3
+				602, 					project.res.y +  1 + (35 * self.zoomIn),		-- point 4
+			}'''
+position = "before"
+payload = '''
+local textHeight = fonts.digitalDisco:getHeight()
+
+local padding = { x = 10, y = 3 }
+
+trapezoid = {
+    602,                        project.res.y - (textHeight + padding.y) + (35 * self.zoomIn),  -- point 1
+    600 - (textWidth+10),       project.res.y - (textHeight + padding.y) + (35 * self.zoomIn),  -- point 2
+    600 - (textWidth+30),       project.res.y +  padding.y               + (35 * self.zoomIn),  -- point 3
+    602,                        project.res.y +  padding.y               + (35 * self.zoomIn),  -- point 4
+}
+'''
+match_indent = true
+
