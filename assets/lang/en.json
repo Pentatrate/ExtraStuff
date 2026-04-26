@@ -135,6 +135,6 @@
   "extrastuffHasAds": "Ads",
   "extrastuffInversed": "Oops! All Inverses",
   "extrastuffAllTaps": "Oops! All Taps",
-  "extrastuffGotJumpscared": "Got Jumpscared",
+  "extrastuffGotJumpscared": "Got Jumpscared: @@1@@x",
   "extrastuffNegativeSC": "Negative Scrollspeed"
 }

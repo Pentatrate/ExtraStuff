@@ -72,7 +72,7 @@ position = "after"
 payload = '''
 extraDefaultSave = dpf.loadJson("Mods/ExtraStuff/defaultSav.json")
 extrasavedata = dpf.loadJson("savedata/extraMod.sav", extraDefaultSave)
-print("loaded extrasavedata")
+log("loaded extrasavedata")
 '''
 match_indent = true
 
@@ -118,7 +118,8 @@ function tryTriggerJumpscare()
 		te.playOne(sounds.foxyjumpscare,"static",'sfx',1)
 		jumpscareActive = true
 		if cs.name == "Game" then
-			cs.gotJumpscared = true
+			cs.gotJumpscared = cs.gotJumpscared or 0
+			cs.gotJumpscared = cs.gotJumpscared + 1
 		end
 	end
 end
@@ -133,7 +134,6 @@ pattern = '''
 '''
 position = "after"
 payload = '''
-print(cs.gotJumpscared)
 if not getNewAdKeys then
 	landscapeAdKeys = {}
 	portraitAdKeys = {}
@@ -160,8 +160,10 @@ end
 
 tryjumpscaretimer = tryjumpscaretimer + d
 if tryjumpscaretimer > 1 and extrasavedata.foxyJumpscare then
-	tryTriggerJumpscare()
-	tryjumpscaretimer = 0
+	if not extrasavedata.onlyInGamefj or cs.name == "Game" then
+		tryTriggerJumpscare()
+		tryjumpscaretimer = 0
+	end
 end
 if jumpscareActive and jumpscareInst then
 	jumpscareInst:update(d, 1200)
@@ -243,6 +245,7 @@ if project.showFPS then
 position = "before"
 payload = '''
 if jumpscareActive and jumpscareInst then
+	love.graphics.setColor(1,1,1,extrasavedata.foxyJumpscareAlpha or 1)
 	jumpscareInst:draw(0, 0, 0, 1.9 * shuv.scale, 1.9 * shuv.scale)
 -- inst:draw(x,y,r,sx,sy,ox,oy,kx,ky)
 end

@@ -154,7 +154,9 @@ if config then
 	imguiextra.LabeledSeparator("-  Foxy Jumpscare", 1)
 	
 	config.foxyJumpscare = helpers.InputBool("Do Jumpscare", (config.foxyJumpscare or false))
+	config.onlyInGamefj = helpers.InputBool("Only Ingame", (config.onlyInGamefj or false))
 	config.foxyJumpscareChance = helpers.InputFloat("Chance (in Percent)", (config.foxyJumpscareChance or 0.1))
+	config.foxyJumpscareAlpha = helpers.clamp(helpers.InputFloat("Alpha", (config.foxyJumpscareAlpha or 1)),0,1)
 
 	imguiextra.LabeledSeparator("-  Ads", 1)
 	

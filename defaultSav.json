@@ -80,8 +80,10 @@
 	"crankySpeedToMouse": 5,
 	
 	"foxyJumpscare": false,
+	"onlyInGamefj": false,
 	"coydressReplaceFoxy": false,
 	"foxyJumpscareChance": 0.1,
+	"foxyJumpscareAlpha": 1,
 	
 	"robloxAds": false,
 	

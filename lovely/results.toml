@@ -106,7 +106,7 @@ if extrasavedata.alwaysNegativeSC then
 end
 if cs.gotJumpscared then
 	if str ~= '' then str = str .. ', ' end
-	str = str .. loc.get('extrastuffGotJumpscared')
+	str = str .. loc.get('extrastuffGotJumpscared', {string.format(cs.gotJumpscared, "%f")})
 end
 --print(fonts.digitalDisco:getHeight())
 '''
@@ -124,7 +124,7 @@ love.graphics.print(str, 600 - textWidth - 5, project.res.y - 18 + (35 * self.zo
 '''
 position = "at"
 payload = '''
-print(str)
+--print(str)
 if textWidth > 500 then
     local padding = { x = 10, y = 3 }
     local limit = 500
