@@ -138,9 +138,9 @@ if config then
 	config.fishPerPage = helpers.clamp(imguiextra.IntInput("Fish Per Page", config.fishPerPage or 4), 1, 16)
 	if mods["betterFishing"] then
 		imgui.EndDisabled()
-		--[[config.replayFish = false
+		config.replayFish = false
 		config.fishingBookText = false
-		config.fishPerPage = mods["betterFishing"].config.fishPerPage or 4]]
+		config.fishPerPage = mods["betterFishing"].config.fishPerPage or 4
 		imgui.TextWrapped("BetterFishing detected. Disabling Fishing configs.")
 	end
 	

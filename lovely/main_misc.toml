@@ -36,6 +36,9 @@ position = "after"
 payload = '''
 exstuff.adsUpdate(d)
 exstuff.jumpscareUpdate(d)
+if mods["betterFishing"] and mods["betterFishing"].config.fishPerPage ~= extrasavedata.fishPerPage then
+	extrasavedata.fishPerPage = mods["betterFishing"].config.fishPerPage
+end
 '''
 match_indent = true
 
