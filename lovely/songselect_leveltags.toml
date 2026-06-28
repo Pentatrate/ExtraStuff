@@ -1,0 +1,61 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+self.sortingButton = em.init('SortingButton',{x = project.res.cx, y = project.res.cy })
+'''
+position = "after"
+payload = '''
+if extrasavedata.showTags then
+	self.tagsDisplay = em.init('TagsDisplay',{ x = 590, y = 10 })
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+self.levelData = levelData -- Loads the level data in memory so it can be fed to the level upon load. This is probably a very minor performance improvement, but we're already pre-loading the data so might as well.
+'''
+position = "after"
+payload = '''
+if extrasavedata.showTags then
+local tagList = tags.generateTags(self.levelData, self.menuItems[self.selection].filename)
+self.tagsDisplay:setTags(tagList)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+self.sortingButton:update(dt)
+'''
+position = "after"
+payload = '''
+if extrasavedata.showTags then
+self.tagsDisplay:update(dt)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+self.sortingButton:draw(-(self.x+1) * 350)
+'''
+position = "after"
+payload = '''
+if extrasavedata.showTags then
+self.tagsDisplay:draw()
+end
+'''
+match_indent = true

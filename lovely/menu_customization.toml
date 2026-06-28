@@ -3,6 +3,22 @@ version = "1.1.1"
 dump_lua = true
 priority = 0
 
+#No you won't get a explanation as I don't remember.
+
+[[patches]]
+[patches.pattern]
+target = "states/Menu.lua"
+pattern = '''
+st:setUpdate(function(self,dt)
+'''
+position = "after"
+payload = '''
+if maininput:down("f9") then
+	self.editMenu = true
+end
+'''
+match_indent = true
+
 [[patches]]
 [patches.pattern]
 target = "states/Menu.lua"
@@ -11,33 +27,6 @@ st:setFgDraw(function(self)
 '''
 position = "after"
 payload = '''
-if maininput:down("f9") then
-	self.editMenu = true
-end
-
-if self.chimaera then
-	self.menuMusicManager:stop()
-
-	--[[cs = bs.load('BattleState')
-	cs.bg = self.bg
-	cs:init({{'chimaeraBoss', { ogx = 467, ogy = 153 }}}, {"The walls shift...",
-		"A gust of wind rattles the room.",
-		"Distant echoes.",
-		"The ground trembles slightly.",
-		"Shadows dance across the walls.",
-		"Time seems to slow down.",
-		"A faint rumble echoes around.",
-		"The air feels heavy.",
-		"Silence fills the space.",
-		"A eerie calm settles.",
-		"Cranky wants cornbread",
-		"..."})]]
-
-	cs = bs.load('WorldState')
-	self.bg.delete = true
-	cs:init('Mods/ExtraStuff/rooms/EraChimaeraRoom.json')
-end
-
 local function shuffle(t)
 	for i = #t, 2, -1 do
 		local j = love.math.random(i)
@@ -129,31 +118,32 @@ if self.editMenu then
 			if not extrasavedata.moreMMenuCustomization.logoPosOff then
 				extrasavedata.moreMMenuCustomization.logoPosOff = {0,0}
 			end
-			--extrasavedata.moreMMenuCustomization.logoPosOff[1] = helpers.InputFloat("X Offset", extrasavedata.moreMMenuCustomization.logoPosOff[1] or 0)
-			--extrasavedata.moreMMenuCustomization.logoPosOff[2] = helpers.InputFloat("Y Offset", extrasavedata.moreMMenuCustomization.logoPosOff[2] or 0)
+			
 			if imgui.Button("Edit Offset") then
 				self.editPosLogoWindow = not self.editPosLogoWindow
 			end
 
 			if not self.oldMenu then
 				imguiextra.LabeledSeparator("RadialList Params", 1)
-				extrasavedata.moreMMenuCustomization.radialList.circleWidth = helpers.InputFloat("circleWidth", extrasavedata.moreMMenuCustomization.radialList.circleWidth or 72)
-				extrasavedata.moreMMenuCustomization.radialList.angleOffset = math.rad(helpers.InputFloat("angleOffset", math.deg(extrasavedata.moreMMenuCustomization.radialList.angleOffset) or 0))
-				extrasavedata.moreMMenuCustomization.radialList.activeArc = helpers.InputFloat("activeArc", extrasavedata.moreMMenuCustomization.radialList.activeArc or 1.57)
-				extrasavedata.moreMMenuCustomization.radialList.radius = helpers.InputFloat("radius", extrasavedata.moreMMenuCustomization.radialList.radius or 500)
-				extrasavedata.moreMMenuCustomization.radialList.bounceStrength = helpers.InputFloat("bounceStrength", extrasavedata.moreMMenuCustomization.radialList.bounceStrength or 1)
-				extrasavedata.moreMMenuCustomization.radialList.iconDistance = helpers.InputFloat("iconDistance", extrasavedata.moreMMenuCustomization.radialList.iconDistance or 0.261)
-				extrasavedata.moreMMenuCustomization.radialList.x = helpers.InputFloat("x", extrasavedata.moreMMenuCustomization.radialList.x or 200)
-				extrasavedata.moreMMenuCustomization.radialList.y = helpers.InputFloat("y", extrasavedata.moreMMenuCustomization.radialList.y or 750)
-				extrasavedata.moreMMenuCustomization.radialList.static = helpers.InputBool("static", extrasavedata.moreMMenuCustomization.radialList.static or false)
-				extrasavedata.moreMMenuCustomization.radialList.hideLabels = helpers.InputBool("hideLabels", extrasavedata.moreMMenuCustomization.radialList.hideLabels or false)
+				local radialListSettings = extrasavedata.moreMMenuCustomization.radialList
+				radialListSettings.circleWidth = helpers.InputFloat("circleWidth", radialListSettings.circleWidth or 72)
+				radialListSettings.angleOffset = math.rad(helpers.InputFloat("angleOffset", math.deg(radialListSettings.angleOffset) or 0))
+				radialListSettings.activeArc = helpers.InputFloat("activeArc", radialListSettings.activeArc or 1.57)
+				radialListSettings.radius = helpers.InputFloat("radius", radialListSettings.radius or 500)
+				radialListSettings.bounceStrength = helpers.InputFloat("bounceStrength", radialListSettings.bounceStrength or 1)
+				radialListSettings.iconDistance = helpers.InputFloat("iconDistance", radialListSettings.iconDistance or 0.261)
+				radialListSettings.x = helpers.InputFloat("x", radialListSettings.x or 200)
+				radialListSettings.y = helpers.InputFloat("y", radialListSettings.y or 750)
+				radialListSettings.static = helpers.InputBool("static", radialListSettings.static or false)
+				radialListSettings.hideLabels = helpers.InputBool("hideLabels", radialListSettings.hideLabels or false)
 				if imgui.Button("Reset Params") then --helpers.InputFloat(k, v)
-					extrasavedata.moreMMenuCustomization.radialList = helpers.copy(extraDefaultSave.moreMMenuCustomization.radialList)
+					radialListSettings = helpers.copy(extraDefaultSave.moreMMenuCustomization.radialList)
 				end
 			end
-
-			--local backgroundEntities = {"MenuBackground", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "TrumpetGirl", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "DecoAtomMap", "MonitorTheme"}
-			local backgroundEntities = {"MenuBackground", "NoBG", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", "Rain", "HoleBackground", "PublicoBG", "Plasma", "SineWaves", "LawrenceBG", "DamoclismBG", "SpiralBG", "Player"}
+			
+			local backgroundEntities = {
+				"MenuBackground", "NoBG", "oldTitle", "CreditsBG", "cbackground", "TutorialBG", "ShinamonBG", 
+				"MinesweeperBG", "HoleBackground", "Plasma", "SineWaves", "PublicoBG", "LawrenceBG", "DamoclismBG", "SpiralBG"}
 
 			imguiextra.LabeledSeparator("Background Entity", 1)
 			if imgui.BeginCombo("##BackgroundEntity", extrasavedata.moreMMenuCustomization.backgroundEntity) then
@@ -287,6 +277,7 @@ payload = '''
 if not self.oldMenu and (project.event or (not project.release)) then
 '''
 match_indent = true
+
 [[patches]]
 [patches.pattern]
 target = "states/Menu.lua"
@@ -298,6 +289,7 @@ payload = '''
 if not self.oldMenu then
 '''
 match_indent = true
+
 [[patches]]
 [patches.pattern]
 target = "states/Menu.lua"
@@ -747,31 +739,3 @@ match_indent = true
 #love.graphics.setColor(shuv.pal[0].r/255 or 1,shuv.pal[0].g/255 or 1,shuv.pal[0].b/255 or 1,1)
 #'''
 #match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/BEATROCK/HoleBackground.lua"
-pattern = '''
-	self.spawnTimer = self.spawnTimer - (cs.cBeat - self.lastbeat)
-	self.lastbeat = cs.cBeat
-'''
-position = "before"
-payload = '''
-	if not cs.cBeat or cs.noBeat then
-		cs.cBeat = (cs.cBeat or 0) + dt/60
-		cs.noBeat = true
-	end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "obj/level/lawrence/LawrenceBG.lua"
-pattern = '''
-self.cumulativeAngle = self.cumulativeAngle + cs.p.angleDelta
-'''
-position = "at"
-payload = '''
-self.cumulativeAngle = self.cumulativeAngle + (cs.p and cs.p.angleDelta or 0)
-'''
-match_indent = true

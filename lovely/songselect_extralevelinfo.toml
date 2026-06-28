@@ -1,0 +1,57 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "states/SongSelect.lua"
+pattern = '''
+love.graphics.printf(level.bpm,xBorder+xOffset,bpmY,wrapLimit,'left')
+'''
+position = "at"
+payload = '''
+local str = level.bpm
+local length = 0
+local FC = 0
+if extrasavedata.chartinfoplus and extrasavedata.chartinfoplus.enabled then
+	if not self.esextralvlinfocache then
+		self.esextralvlinfocache = {}
+	end
+	if self.levelData and self.timingInfo then
+		local filename = self.menuItems[self.selection].filename
+		
+		if not self.esextralvlinfocache[filename] then
+			self.esextralvlinfocache[filename] = {}
+			if extrasavedata.chartinfoplus.levelLength then
+				length = tags.calculateLevelLength(self.timingInfo)
+				self.esextralvlinfocache[filename].length = length
+				str = str .. " Len: " .. tostring(math.floor(length/60)) .. ":" .. tostring(string.format("%02d", math.floor(length%60)))
+			end
+			if extrasavedata.chartinfoplus.fullCombo then
+				FC = tags.getFullCombo(self.levelData, self.menuItems[self.selection].filename)
+				self.esextralvlinfocache[filename].fullcombo = FC
+				str = str .. " FC: " .. FC
+			end
+		else
+			if extrasavedata.chartinfoplus.levelLength then
+				local length = self.esextralvlinfocache[filename].length
+				str = str .. " Len: " .. tostring(math.floor(length/60)) .. ":" .. tostring(string.format("%02d", math.floor(length%60)))
+			end
+			if extrasavedata.chartinfoplus.fullCombo then
+				str = str .. " FC: " .. self.esextralvlinfocache[filename].fullcombo
+			end
+		end
+	else
+		if extrasavedata.chartinfoplus.levelLength then
+			str = str .. " Len: ?:??"
+		end
+		if extrasavedata.chartinfoplus.fullCombo then
+			str = str .. " FC: ???"
+		end
+	end
+end
+
+love.graphics.printf(str,xBorder+xOffset,bpmY,wrapLimit + 200,'left')
+'''
+match_indent = true

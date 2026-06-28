@@ -128,16 +128,21 @@ if config then
 	
 	imguiextra.LabeledSeparator("Fishing", 1)
 	
+	if mods["betterFishing"] then
+		imgui.BeginDisabled()
+	end
 	if type(config.replayFish) == 'nil' then config.replayFish = true end
 	config.replayFish = helpers.InputBool("Replay Fish Dialogue", (config.replayFish or false))
 	config.fishingBookText = helpers.InputBool("Book Texture", (config.fishingBookText or false))
-	
-	--local fishPerPageBuf = ffi.new("int[1]", config.fishPerPage or 4)
 
-	--if imgui.InputInt("Fish Per Page", fishPerPageBuf) then
-	--	config.fishPerPage = helpers.clamp(fishPerPageBuf[0], 1, 16)
-	--end
 	config.fishPerPage = helpers.clamp(imguiextra.IntInput("Fish Per Page", config.fishPerPage or 4), 1, 16)
+	if mods["betterFishing"] then
+		imgui.EndDisabled()
+		--[[config.replayFish = false
+		config.fishingBookText = false
+		config.fishPerPage = mods["betterFishing"].config.fishPerPage or 4]]
+		imgui.TextWrapped("BetterFishing detected. Disabling Fishing configs.")
+	end
 	
 	imguiextra.LabeledSeparator("Fun Stuff", 1)
 	imguiextra.LabeledSeparator("-  Arrow Keys", 1)
@@ -176,32 +181,8 @@ if config then
 	config.extraConfigOtherMods = helpers.InputBool("Extra Config for Other Mods?", (config.extraConfigOtherMods or false))
 	
 	if config.extraConfigOtherMods then
-		if mods["DetailedAcc"] then
-			if imgui.CollapsingHeader_TreeNodeFlags("Detailed Accuracy by TGTM") then
-				config.detailedacc = config.detailedacc or {}
-				if versionCheck(mods["DetailedAcc"].version, "2.0.0") >= 0 then
-					if type(config.detailedacc.moveTapDisplayLeft) == "boolean" then
-						mods["DetailedAcc"].config.KeyPressesRight = not config.detailedacc.moveTapDisplayLeft
-						config.detailedacc.moveTapDisplayLeft = nil
-					end
-				else
-					config.detailedacc.moveTapDisplayLeft = helpers.InputBool("Move the Tap Display to the Left", (config.detailedacc.moveTapDisplayLeft or false))
-				end
-				config.detailedacc.moveTapErrorMeterTop = helpers.InputBool("Move the Tap Error Meter to the Top", (config.detailedacc.moveTapErrorMeterTop or false))
-				
-				local positions = {"topLeft", "topRight", "bottomLeft", "bottomRight"}
-				
-				if imgui.BeginCombo("Section Timer Position", config.detailedacc.sectionTimerPos) then
-					for i, v in ipairs(positions) do
-						local isSelected = (v == config.detailedacc.sectionTimerPos)
-						if imgui.Selectable_Bool(v, isSelected) then
-							config.detailedacc.sectionTimerPos = v
-						end
-					end
-					imgui.EndCombo()
-				end 
-			end
-		end
+		-- lowkey dont even use DetailedAcc anyways
+		imgui.Text("Nothing to see.")
 	end
 	
 	imgui.Separator()

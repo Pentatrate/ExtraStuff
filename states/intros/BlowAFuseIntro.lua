@@ -27,31 +27,30 @@ st:setInit(function(self, filename)
 	local angle = math.rad(math.random(-90, 90))
 	local cx, cy = project.res.x / 2, project.res.y / 2
 
-	self.bomb.x = cx + math.cos(angle) * dist
-	self.bomb.y = cy + math.sin(angle) * dist
+	self.bomb.x = cx
+	self.bomb.y = cy+18
 
     self.bomb.scale = 1
+	self.bomb.sparkScale = 1000
 
     self.explosion = nil
 
-    flux.to(self.bomb, 50, {x = project.res.x/2, y = project.res.y/2, scale = 0.8})
-        :delay(40)
-        :ease("inOutQuad")
-        :oncomplete(function()
-            flux.to(self.bomb, 12, {scale = 1.2, sparkScale = 0.2, sparkSpeed = 0.5})
-                :delay(50)
-                :ease("inSine")
-                :oncomplete(function()
-                    self.bomb.scale = 0
-                    te.playOne(st.static.audio, "static", "sfx", 1)
-					
-                    self.explosion = st.static.explosion:instance("all")
-                    self.explosion:play("all", 0, function(inst)
-						self.goToLevel = true
-                        self.explosion = nil
-                    end)
-                end)
-        end)
+	flux.to(self.bomb, 96, {sparkScale = 150}):delay(50):oncomplete(function()
+	flux.to(self.bomb, 96, {scale = 1.2, sparkScale = 150, sparkSpeed = 0.5})
+		:ease("inSine")
+		:oncomplete(function()
+			self.bomb.scale = 0
+			
+			te.playOne(st.static.audio, "static", "sfx", 1)
+			
+			self.explosion = st.static.explosion:instance("all")
+			self.drawNo = true
+			self.explosion:play("all", 0, function(inst)
+				self.goToLevel = true
+				self.explosion = nil
+			end)
+		end)
+	end):ease("outSine")
 end)
 
 st:setUpdate(function(self, dt)
@@ -79,14 +78,32 @@ st:setUpdate(function(self, dt)
 end)
 
 st:setFgDraw(function(self)
-    if self.bomb then
-        love.graphics.draw(self.canv, 0, 0)
-        love.graphics.draw(self.bgCanv, 0, 0)
-        love.graphics.draw(self.fgCanv, 0, 0)
-        love.graphics.draw(self.uiCanv, 0, 0)
-        self.bomb:draw()
-    end
-
+	
+		if self.bomb and self.drawNo ~= true then
+			love.graphics.draw(self.canv, 0, 0)
+			love.graphics.draw(self.bgCanv, 0, 0)
+			love.graphics.draw(self.uiCanv, 0, 0)
+			--self.bomb:draw()
+			
+				color()
+				for i = 1,self.bomb.orbitCount do
+					if self.bomb.sparks[i].layer < 0 then
+						self.bomb:drawSpark(self.bomb.sparks[i])
+					end
+				end
+				local r = math.rad(math.sin(self.bomb.bombTimer)*5)
+				--love.graphics.draw(self.bomb.spr.bomb,self.bomb.x,self.bomb.y,0,self.bomb.scale,self.bomb.scale,250,250)
+				love.graphics.draw(self.fgCanv, 0, 0)
+				for i = 1,self.bomb.orbitCount do
+					if self.bomb.sparks[i].layer >= 0 then
+						self.bomb:drawSpark(self.bomb.sparks[i])
+					end
+				end
+			
+		else
+			love.graphics.setColor(1,1,1,1)
+            love.graphics.rectangle("fill",0,0,1000,1000)
+		end
     if self.explosion then
 		self.explosion:draw(200, 180, 0, 2, 2, 71, 100) --(x,y,r,sx,sy,ox,oy,kx,ky)
         self.explosion:draw(450, 180, 0, 2, 2, 71, 100) --(x,y,r,sx,sy,ox,oy,kx,ky)

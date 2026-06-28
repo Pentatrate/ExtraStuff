@@ -3,6 +3,9 @@ version = "1.1.1"
 dump_lua = true
 priority = 0
 
+# yeah no, im not organizing this
+# that would require me to look through this awful thing
+
 [[patches]]
 [patches.pattern]
 target = "states/Fishing.lua"

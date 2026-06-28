@@ -1,0 +1,95 @@
+[manifest]
+version = "1.1.1"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+toggle_fullscreen = { "key:f11" },
+'''
+position = "after"
+payload = '''
+up = { "key:up" },
+down = { "key:down" },
+right = { "key:right" },
+left = { "key:left" },
+kp1 = { "key:kp1" },
+kp2 = { "key:kp2" },
+kp3 = { "key:kp3" },
+kp4 = { "key:kp4" },
+kp9 = { "key:kp9" },
+kp6 = { "key:kp6" },
+kp7 = { "key:kp7" },
+kp8 = { "key:kp8" },
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+	prof.push('frame')
+'''
+position = "after"
+payload = '''
+exstuff.adsUpdate(d)
+exstuff.jumpscareUpdate(d)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+if project.showFPS then
+'''
+position = "before"
+payload = '''
+if jumpscareActive and jumpscareInst then
+	love.graphics.setColor(1,1,1,extrasavedata.foxyJumpscareAlpha or 1)
+	jumpscareInst:draw(0, 0, 0, 1.9 * shuv.scale, 1.9 * shuv.scale)
+-- inst:draw(x,y,r,sx,sy,ox,oy,kx,ky)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+mouse:draw()
+'''
+position = "before"
+payload = '''
+if extrasavedata.robloxAds then
+	local w, h, _ = love.window.getMode()
+	local s = 1
+	if shuv.scale == 1 then
+		s = 0.5
+	end
+	love.graphics.draw(sprites.ads.landscape[currentLandscapeAd], w/2, 0, 0, s, s, 364)
+	love.graphics.draw(sprites.ads.portrait[currentPortraitAd], 0, h/2, 0, s, s, 0, 300)
+	if cs.name == "Results" then
+		love.graphics.draw(sprites.ads.square[currentSquareAd], w, h/2, 0, s, s, 300, 250)
+	else
+		love.graphics.draw(sprites.ads.square[currentSquareAd], w, h, 0, s, s, 300, 250)
+	end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = '''
+self.initFunc = initFunc
+'''
+position = "after"
+payload = '''
+if not self.rateMod then
+	self.rateMod = 1
+end --i dont know if this works and idc
+'''
+match_indent = true

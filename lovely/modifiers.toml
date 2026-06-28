@@ -3,39 +3,200 @@ version = "1.1.1"
 dump_lua = true
 priority = 0
 
+#If you are looking for alwaysNegativeScrollSpeed, it is in gamemanager_misc.toml - cerdef for cerdef and whomever got lost here
+
+# NOTE MODIFIERS
+
 [[patches]]
 [patches.pattern]
-target = "states/Results.lua"
+target = "obj/notes/Block.lua"
 pattern = '''
-dpf.saveJson("savedata/playedlevels.json", self.playedLevelsJson)
+self.inverse = false
 '''
 position = "after"
 payload = '''
---self:goToHiddenLevel('levels/Finished levels/blowafuse/', 'BlowAFuseIntro')
+if extrasavedata.allInverse then
+	self.inverse = true
+end
 '''
 match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "states/Results.lua"
+target = "levelformat/events/Notes/bounce.lua"
 pattern = '''
-function st:changeToHidden()
+tap = event.tap,
+'''
+position = "at"
+payload = '''
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/block.lua"
+pattern = '''
+tap = event.tap,
+'''
+position = "at"
+payload = '''
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/inverse.lua"
+pattern = '''
+tap = event.tap,
+'''
+position = "at"
+payload = '''
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/side.lua"
+pattern = '''
+tap = event.tap,
+'''
+position = "at"
+payload = '''
+tap = event.tap or extrasavedata.allTap,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "levelformat/events/Notes/hold.lua"
+pattern = '''
+tap = event.startTap,
+endTap = event.endTap,
+'''
+position = "at"
+payload = '''
+tap = event.startTap or extrasavedata.allTap,
+endTap = event.endTap or extrasavedata.allTap,
+'''
+match_indent = true
+
+# PLAYER MODIFIERS
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+function Player:getDistance()
 '''
 position = "before"
 payload = '''
-function st:goToHiddenLevel(levelPath, transitionState, variant)
-    self.goToHidden = true
-	self.transition = transitionState or 'NisenenIntro'
-	self.filename = levelPath or 'levels/Finished levels/nisenen/'
-	self.newVariant = variant or 'hard'
-	
-	-- Ratemod, restart on and no barely judgements should reset on hidden song entry
-	self.rateMod = 1
-	self.restartOn = 'none'
-	--self.noBarelyJudgements = false
+function Player:arrowKey()
+    local x, y = 0, 0
+
+    if maininput:down("kp8") or maininput:down("up") then    -- up
+        y = y - 1
+    end
+    if maininput:down("kp2") or maininput:down("down") then    -- down
+        y = y + 1
+    end
+    if maininput:down("kp6") or maininput:down("right") then    -- right
+        x = x + 1
+    end
+    if maininput:down("kp4") or maininput:down("left") then    -- left
+        x = x - 1
+    end
+
+    if maininput:down("kp7") then    -- up-left
+        x = x - 1
+        y = y - 1
+    end
+    if maininput:down("kp9") then    -- up-right
+        x = x + 1
+        y = y - 1
+    end
+    if maininput:down("kp1") then    -- down-left
+        x = x - 1
+        y = y + 1
+    end
+    if maininput:down("kp3") then    -- down-right
+        x = x + 1
+        y = y + 1
+    end
+
+    if x ~= 0 or y ~= 0 then
+        local angle = math.deg(math.atan2(x, -y))
+        if angle < 0 then
+            angle = angle + 360
+        end
+
+        self.angle = angle
+    end
+end
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+local angleDifference = self.angle - self.anglePrevFrame
+'''
+position = "before"
+payload = '''
+end
+if extrasavedata.arrowKeyControls then
+	self:arrowKey()
 end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+for k, v in ipairs(self.angleHistory) do
+					if v[1] < cs.cBeat - 5 then
+						table.remove(self.angleHistory, k)
+					end
+				end
+			end
+		end
+'''
+position = "after"
+payload = '''
+if not (extrasavedata.onlyArrowKeys and extrasavedata.arrowKeyControls) then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "obj/Player.lua"
+pattern = '''
+function Player:update(dt)
+  prof.push("player update")
+'''
+position = "after"
+payload = '''
+if extrasavedata.movesTowardsMouse then
+    local dx = self.x - mouse.rx
+    local dy = self.y - mouse.ry
+    local distance = math.sqrt(dx*dx + dy*dy)
+    
+    if distance > extrasavedata.moveToRadiusCranky then
+        local angle = math.atan2(dy, dx)
+        local targetX = mouse.rx + math.cos(angle) * extrasavedata.moveToRadiusCranky
+        local targetY = mouse.ry + math.sin(angle) * extrasavedata.moveToRadiusCranky
+        flux.to(self, extrasavedata.crankySpeedToMouse or 5, {x = targetX, y = targetY}):ease("inOutQuad")
+    end
+end
+'''
+match_indent = true
+
+# RESULTS SCREEN
 
 [[patches]]
 [patches.pattern]
