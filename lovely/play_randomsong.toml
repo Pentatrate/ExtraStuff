@@ -8,7 +8,7 @@ priority = -1
 target = "levelformat/events/Gameplay/play.lua"
 pattern = '''
 cs.timingInfo.initial = {bpm = event.bpm, timeOffsetSeconds = event.offset, beatOffset = event.time}
-if not love.filesystem.exists(cLevel..event.file) then
+if not love.filesystem.getInfo(cLevel..event.file) then
 	cs:playbackError('Song file "' .. cLevel..event.file .. '" does not exist. Please ensure you typed the name correctly, and that it is in the right location.')
 	return true
 end
@@ -30,10 +30,10 @@ table.insert(entryList, {
     index = #validEntries
 })
 
-if love.filesystem.exists(cLevel.."randomSongs.json") then
+if love.filesystem.getInfo(cLevel.."randomSongs.json") then
 	local entries = dpf.loadJson(cLevel.."randomSongs.json", {})
 	for _, v in ipairs(entries) do
-		if love.filesystem.exists(cLevel..v.file) then
+		if love.filesystem.getInfo(cLevel..v.file) then
 			table.insert(validEntries, {bpm = v.bpm or event.bpm, timeOffsetSeconds = v.offset or event.offset, beatOffset = event.time, file = v.file})
 			local displayName = v.name or v.file
 			table.insert(entryList, {name = displayName, index = #validEntries})
@@ -61,7 +61,7 @@ Event.property(event,'decimal', 'offset', 'Offset of the song, in seconds.', {op
 position = "after"
 payload = '''
 if extrasavedata.randomSongs then
-	if not love.filesystem.exists(cLevel.."randomSongs.json") then
+	if not love.filesystem.getInfo(cLevel.."randomSongs.json") then
 		if imgui.Button("Generate RanSongJSON") then
 			dpf.loadJson(cLevel.."randomSongs.json", {{bpm=event.bpm, timeOffsetSeconds=event.offset or 0, file="template.ogg"}})
 			love.system.openURL("file://" .. love.filesystem.getRealDirectory(cLevel) .. '/' .. cLevel .. "randomSongs.json")
